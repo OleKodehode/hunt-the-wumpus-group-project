@@ -69,6 +69,10 @@ class WumpusClient {
         console.log(`Neighboring caves (possible destinations): [${neighbors.join(', ')}]`);
         const perceptions = this.currentPerceptions.join(', ') || "Nothing unusual";
         console.log(`Perceptions: ${perceptions}`);
+
+        if (this.currentPerceptions.includes("MOVEMENT (Other player nearby)")) {
+            console.log("\nYou hear movement nearby. An opponent might be in an adjacent cave!");
+        }
     }
 
     /**
