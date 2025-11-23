@@ -37,27 +37,43 @@ function GameMenu() {
   const buttonStyle = {
     minWidth: "20dvw",
     fontFamily: "var(--font-button)",
-    fontWeight: "bold",
-    fontSize: "1rem",
-    color: "#FFD700",
-    backgroundColor: "#7B1E1E",
-    border: "3px solid #FFD700",
-    borderRadius: "15px",
-    padding: "12px 24px",
-    boxShadow: "4px 4px 0 #000",
+    fontSize: "1.1rem",
+    color: "#d8c27a",
+    textTransform: "none",
+
+    background: "linear-gradient(to bottom, #000000, #1a0e07)",
+    border: "2px solid #bfa46a",
+    borderRadius: "6px",
+
+    padding: "8px 24px",
+    letterSpacing: "1px",
+
+    boxShadow: `
+      inset 0 2px 6px rgba(255, 215, 130, 0.15),
+      0 0 8px rgba(0,0,0,0.6)
+    `,
     // backgroundImage: "url(buttonTexture.jpg)",
     // backgroundSize: "cover",
     // backgroundPosition: "center",
 
     "&:hover": {
-      backgroundColor: "#531111ff",
-      boxShadow: "2px 2px 0 #000",
-      transform: "translateY(-2px)",
+      background: "linear-gradient(to bottom, #1a0e07, #000000)",
+      boxShadow: `
+        inset 0 2px 6px rgba(255, 215, 130, 0.25),
+        0 0 10px rgba(0,0,0,0.8)
+      `,
     },
 
-    "&:active": {
-      boxShadow: "inset 2px 2px 0 #000",
-      transform: "translateY(2px)",
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: "4px",
+      left: "4px",
+      right: "4px",
+      bottom: "4px",
+      border: "1px solid #bfa46a",
+      borderRadius: "4px",
+      pointerEvents: "none",
     },
   };
 
@@ -95,12 +111,14 @@ function GameMenu() {
       >
         <Button
           size="large"
-          variant="contained"
+          variant="text"
           sx={buttonStyle}
           onClick={handleCreateGame}
           disabled={isLoading}
         >
-          {isLoading ? "Creating Game..." : "Start Game"}
+          <p className="text-[#d8c27a]">
+            {isLoading ? "Creating Game..." : "Start Game"}
+          </p>
         </Button>
         {error && <p>Error: {error.message}</p>}
       </Stack>

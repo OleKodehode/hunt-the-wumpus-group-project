@@ -1,20 +1,31 @@
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
+import Snackbar from "@mui/material/Snackbar";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const BASE_URL = `http://localhost:9001/api/game`;
 
 function GameLobby() {
+  //Params
   const { gameId } = useParams();
   const location = useLocation();
   const { playerId } = location.state || {}; // Get playerId from state, with a fallback
+
+  // States
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
   const navigate = useNavigate();
+
+  const copy = () => {
+    navigator.clipboard.writeText(gameId);
+    setOpen(true);
+  };
 
   const handleJoin = async () => {
     setIsLoading(true);
@@ -53,27 +64,43 @@ function GameLobby() {
   const buttonStyle = {
     minWidth: "20dvw",
     fontFamily: "var(--font-button)",
-    fontWeight: "bold",
-    fontSize: "1rem",
-    color: "#FFD700",
-    backgroundColor: "#7B1E1E",
-    border: "3px solid #FFD700",
-    borderRadius: "15px",
-    padding: "12px 24px",
-    boxShadow: "4px 4px 0 #000",
+    fontSize: "1.1rem",
+    color: "#d8c27a",
+    textTransform: "none",
+
+    background: "linear-gradient(to bottom, #000000, #1a0e07)",
+    border: "2px solid #bfa46a",
+    borderRadius: "6px",
+
+    padding: "8px 24px",
+    letterSpacing: "1px",
+
+    boxShadow: `
+      inset 0 2px 6px rgba(255, 215, 130, 0.15),
+      0 0 8px rgba(0,0,0,0.6)
+    `,
     // backgroundImage: "url(buttonTexture.jpg)",
     // backgroundSize: "cover",
     // backgroundPosition: "center",
 
     "&:hover": {
-      backgroundColor: "#531111ff",
-      boxShadow: "2px 2px 0 #000",
-      transform: "translateY(-2px)",
+      background: "linear-gradient(to bottom, #1a0e07, #000000)",
+      boxShadow: `
+        inset 0 2px 6px rgba(255, 215, 130, 0.25),
+        0 0 10px rgba(0,0,0,0.8)
+      `,
     },
 
-    "&:active": {
-      boxShadow: "inset 2px 2px 0 #000",
-      transform: "translateY(2px)",
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: "4px",
+      left: "4px",
+      right: "4px",
+      bottom: "4px",
+      border: "1px solid #bfa46a",
+      borderRadius: "4px",
+      pointerEvents: "none",
     },
   };
 
@@ -111,7 +138,18 @@ function GameLobby() {
       >
         {gameId && playerId ? (
           <div className="flex flex-col max-w-[20dvw] gap-5">
-            <p>Here is your Game ID: {gameId}</p>
+            <p
+              style={{ fontFamily: "var(--font-title)" }}
+              className="text-lg text-[#edede9]"
+            >
+              Here is your Game ID:{" "}
+              <span
+                onClick={copy}
+                className="cursor-pointer hover:text-blue-500 active:scale-95 transition"
+              >
+                {gameId}
+              </span>
+            </p>
             <TextField
               id="outlined-basic"
               label="Enter Game ID to join"
@@ -121,15 +159,21 @@ function GameLobby() {
             />
             <Button
               size="large"
-              variant="contained"
+              variant="text"
               sx={buttonStyle}
               onClick={handleJoin}
             >
               Join the Game
             </Button>
+            <Snackbar
+              open={open}
+              autoHideDuration={2000}
+              message="Copied!"
+              onClose={() => setOpen(false)}
+            />
           </div>
         ) : (
-          <p>Loading game details...</p>
+          isLoading && <p>Loading game details...</p>
         )}
       </Stack>
     </Box>
