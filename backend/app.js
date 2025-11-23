@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 // Import game logic controller for reference/type, though most logic is in game_service.js
 import {
   advanceTurn,
@@ -22,6 +23,7 @@ const app = express();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(cors());
 
 // --- API Endpoints ---
 

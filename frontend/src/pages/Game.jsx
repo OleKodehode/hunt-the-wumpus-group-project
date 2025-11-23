@@ -1,8 +1,15 @@
+import { useParams } from "react-router-dom";
+
 function Game() {
+  const { gameId } = useParams();
+
+  // fetch game data here
+  // useEffect(() => fetch(`/api/game/${gameId}`), [])
+
   return (
-    <>
-      <h1>Hello from game!</h1>
-    </>
+    <div>
+      <h1>Game {gameId}</h1>
+    </div>
   );
 }
 

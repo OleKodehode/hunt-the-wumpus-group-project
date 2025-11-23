@@ -1,2 +1,11 @@
 @import "tailwindcss";
 @import "./variables.css";
+@font-face {
+  font-family: "Black Chancery";
+  src: url("../assets/fonts/BLKCHCRY.TTF") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+.errorFont {
+  font-family: "Black Chancery", cursive;
+}

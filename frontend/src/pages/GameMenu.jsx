@@ -1,12 +1,41 @@
-import GameLobby from "./GameLobby";
+import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+import { useState } from "react";
+
+const BASE_URL = `http://localhost:9001/api/game`;
 
 function GameMenu() {
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleCreateGame = async () => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${BASE_URL}/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (data.gameId && data.playerId) {
+        navigate(`/lobby/${data.gameId}`, {
+          state: { playerId: data.playerId },
+        });
+      }
+    } catch (e) {
+      setError(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const buttonStyle = {
     minWidth: "20dvw",
-    textTransform: "none",
     fontFamily: "var(--font-button)",
     fontWeight: "bold",
     fontSize: "1rem",
@@ -16,6 +45,9 @@ function GameMenu() {
     borderRadius: "15px",
     padding: "12px 24px",
     boxShadow: "4px 4px 0 #000",
+    // backgroundImage: "url(buttonTexture.jpg)",
+    // backgroundSize: "cover",
+    // backgroundPosition: "center",
 
     "&:hover": {
       backgroundColor: "#531111ff",
@@ -35,6 +67,7 @@ function GameMenu() {
         backgroundImage: "url('/bgMenu.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         width: "100%",
         height: "100vh",
         overflow: "hidden",
@@ -60,12 +93,16 @@ function GameMenu() {
           height: "70%",
         }}
       >
-        <Button size="large" variant="contained" sx={buttonStyle}>
-          Start Game
+        <Button
+          size="large"
+          variant="contained"
+          sx={buttonStyle}
+          onClick={handleCreateGame}
+          disabled={isLoading}
+        >
+          {isLoading ? "Creating Game..." : "Start Game"}
         </Button>
-        <Button size="large" variant="contained" sx={buttonStyle}>
-          Settings
-        </Button>
+        {error && <p>Error: {error.message}</p>}
       </Stack>
     </Box>
   );
