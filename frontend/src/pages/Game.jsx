@@ -1,17 +1,28 @@
 import { useParams } from "react-router-dom";
-import Bat from "../components/Bat";
-import Monster from "../components/Monster";
-import Player from "../components/Player";
-
+import Map from "../components/Map";
+import { useState } from "react";
+import Snackbar from "@mui/material/Snackbar";
 function Game() {
   const { gameId } = useParams();
+  const [open, setOpen] = useState(false);
 
+  const copy = () => {
+    navigator.clipboard.writeText(gameId);
+    setOpen(true);
+  };
   // fetch game data here
   // useEffect(() => fetch(`/api/game/${gameId}`), [])
 
   return (
     <div>
       <h1>Game {gameId}</h1>
+      <Snackbar
+        open={open}
+        autoHideDuration={2000}
+        message="Copied!"
+        onClose={() => setOpen(false)}
+      />
+      <Map />
     </div>
   );
 }

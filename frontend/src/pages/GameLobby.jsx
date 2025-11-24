@@ -18,14 +18,8 @@ function GameLobby() {
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
-
-  const copy = () => {
-    navigator.clipboard.writeText(gameId);
-    setOpen(true);
-  };
 
   const handleJoin = async () => {
     setIsLoading(true);
@@ -136,45 +130,23 @@ function GameLobby() {
           height: "70%",
         }}
       >
-        {gameId && playerId ? (
-          <div className="flex flex-col max-w-[20dvw] gap-5">
-            <p
-              style={{ fontFamily: "var(--font-title)" }}
-              className="text-lg text-[#edede9]"
-            >
-              Here is your Game ID:{" "}
-              <span
-                onClick={copy}
-                className="cursor-pointer hover:text-blue-500 active:scale-95 transition"
-              >
-                {gameId}
-              </span>
-            </p>
-            <TextField
-              id="outlined-basic"
-              label="Enter Game ID to join"
-              variant="outlined"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-            />
-            <Button
-              size="large"
-              variant="text"
-              sx={buttonStyle}
-              onClick={handleJoin}
-            >
-              Join the Game
-            </Button>
-            <Snackbar
-              open={open}
-              autoHideDuration={2000}
-              message="Copied!"
-              onClose={() => setOpen(false)}
-            />
-          </div>
-        ) : (
-          isLoading && <p>Loading game details...</p>
-        )}
+        <div className="flex flex-col max-w-[20dvw] gap-5">
+          <TextField
+            id="outlined-basic"
+            label="Enter Game ID to join"
+            variant="outlined"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+          />
+          <Button
+            size="large"
+            variant="text"
+            sx={buttonStyle}
+            onClick={handleJoin}
+          >
+            Join the Game
+          </Button>
+        </div>
       </Stack>
     </Box>
   );
