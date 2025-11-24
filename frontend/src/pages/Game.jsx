@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+import Bat from "../components/Bat";
 
 function Game() {
   const { gameId } = useParams();
