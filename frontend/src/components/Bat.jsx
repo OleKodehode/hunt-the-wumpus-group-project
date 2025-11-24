@@ -1,7 +1,15 @@
-function Bat() {
+/**
+ *
+ * @param {string} color Can be: black, blue, green, purple, red, yellow
+ * @returns {JSX.Element}
+ */
+
+function Bat({ color = "black" }) {
+  const imgSrc = `/sprites/bats/${color.toLowerCase()}eyedbat.png`;
+
   return (
     <>
-      <h1>Hello from Bat!</h1>
+      <img src={imgSrc} alt="bat" />
     </>
   );
 }

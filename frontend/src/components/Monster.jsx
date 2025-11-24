@@ -1,7 +1,8 @@
 function Monster() {
+  const imgSrc = `/sprites/monster/wompus.png`;
   return (
     <>
-      <h1>Hello from monster!</h1>
+      <img src={imgSrc} alt="monster" />
     </>
   );
 }
