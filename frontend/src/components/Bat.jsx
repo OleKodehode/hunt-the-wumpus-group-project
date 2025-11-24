@@ -5,12 +5,11 @@
  */
 
 function Bat({ color = "black" }) {
-  color = color.toLowerCase();
-  const imgSrc = `/sprites/bats/${color}eyedbat.png`;
+  const imgSrc = `/sprites/bats/${color.toLowerCase()}eyedbat.png`;
 
   return (
     <>
-      <img src={imgSrc} alt="" />
+      <img src={imgSrc} alt="bat" />
     </>
   );
 }
