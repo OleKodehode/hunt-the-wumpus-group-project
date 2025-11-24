@@ -1,7 +1,9 @@
-function Player() {
+function Player({ dir = "left" }) {
+  const imgSrc = "/sprites/player/player.png";
+  const imgDir = { transform: `scaleX(${dir === "right" ? -1 : 1})` };
   return (
     <>
-      <h1>Hello from player!</h1>
+      <img src={imgSrc} alt="player" style={imgDir} />
     </>
   );
 }

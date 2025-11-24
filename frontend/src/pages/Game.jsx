@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import Bat from "../components/Bat";
 import Monster from "../components/Monster";
+import Player from "../components/Player";
 
 function Game() {
   const { gameId } = useParams();
