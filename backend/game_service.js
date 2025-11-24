@@ -288,3 +288,27 @@ export function getTurnStatus(gameId) {
         currentPlayer: currentPlayer
     };
 }
+
+/**
+ * Returns the current turn state of a specific game.
+ * @param {string} gameId
+ * @returns {{status: string, message: string, hazards: Object|null}}
+ */
+export function getHazardLocation(gameId){
+    const game = activeGames[gameId];
+    if (!game) {
+        return {
+            status: 'error',
+            message: 'Game not found.',
+            hazards: null
+        };
+    }
+
+    const hazards = game.server.getHazardLocation();
+
+    return {
+        status: 'ok',
+        message: 'Data of hazards on map.',
+        hazards: hazards
+    };
+}

@@ -272,4 +272,43 @@ export default class WumpusServer {
             is_alive: player.is_alive
         };
     }
+
+    // Get the games's locations of hazards
+    getHazardLocation(){
+        let wumpusLocation;
+        const pitLocations = [];
+        const batLocations = [];
+
+        if (this.numCaves == 0)
+        {
+            return{
+                error: "Number of generated caves = 0"
+            }
+        }
+
+        for (let i = 0; i < this.numCaves; i++)
+        {
+            if (this.wumpusLocation == i)
+            {
+                wumpusLocation = this.wumpusLocation;
+            }
+
+            if (this.pits.has(i))
+            {
+                pitLocations.push(i);
+            }
+
+            if (this.bats.has(i))
+            {
+                batLocations.push(i);
+            }
+        }
+
+        return {
+            numCaves: this.numCaves,
+            wumpus: wumpusLocation,
+            pits: pitLocations,
+            bats: batLocations
+        }
+    }
 }

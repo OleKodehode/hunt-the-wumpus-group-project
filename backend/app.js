@@ -10,7 +10,8 @@ import {
   deleteGame,
   leaveGame,
   getGameList,
-  getTurnStatus
+  getTurnStatus,
+  getHazardLocation
 } from './game_service.js';
 
 // Documentation
@@ -246,6 +247,20 @@ app.get('/api/game/:playerId/connect', (req, res) => {
       leaveGame(playerId); // remove player and maybe close lobby
       res.end();
   });
+});
+
+/**
+ * GET /api/game/:gameId/hazards
+ * Get data about locations of hazards
+ */
+app.get('/api/game/:gameId/hazards', (req, res) => {
+  const { gameId } = req.params;
+  if (!gameId) {
+    return res.status(404).json(result);
+  }
+
+  const result = getHazardLocation(gameId);
+  res.json(result);
 });
 
 // Start the server
