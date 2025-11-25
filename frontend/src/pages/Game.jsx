@@ -14,7 +14,7 @@ function Game() {
   // useEffect(() => fetch(`/api/game/${gameId}`), [])
 
   return (
-    <div>
+    <div className="m-5">
       <h1>Game {gameId}</h1>
       <Snackbar
         open={open}
