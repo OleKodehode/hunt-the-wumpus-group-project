@@ -18,6 +18,7 @@ function GameLobby() {
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [lobbies, setLobbies] = useState([]);
 
   const navigate = useNavigate();
 
@@ -56,18 +57,22 @@ function GameLobby() {
   };
 
   const handleFetchLobbies = async () => {
-    let lobbies = [];
+    setIsLoading(true);
+    setError(null);
+    setLobbies([]); // reset the array before fetching the updated list
     try {
       const response = await fetch(`${BASE_URL}/list`);
-      const data = response.json();
-      data.then((data) =>
-        data.games.forEach((game) =>
-          lobbies.push([game.gameId, game.numPlayers])
-        )
-      );
-      console.log(lobbies);
+      const data = await response.json();
+      data.games.forEach((game) => {
+        if (game.status === "open") {
+          console.log("Adding lobby:", game.gameId, game.numPlayers);
+          setLobbies((prev) => [...prev, [game.gameId, game.numPlayers]]);
+        }
+      });
     } catch (e) {
       setError(e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -75,6 +80,11 @@ function GameLobby() {
   useEffect(() => {
     handleFetchLobbies();
   }, []);
+
+  // debugging
+  useEffect(() => {
+    console.log(lobbies);
+  }, [lobbies]);
 
   const buttonStyle = {
     minWidth: "20dvw",
@@ -142,6 +152,7 @@ function GameLobby() {
       >
         Slay the Dragon
       </h1>
+      <Box className="absolute left-10 xl:left-20 top-60 xl:top-20 h-4/6 xl:h-5/6 w-3/10 xl:w-2/8 bg-black/60 rounded-lg outline-2 outline-amber-300/50 p-2"></Box>
       <Stack
         spacing={2}
         sx={{
