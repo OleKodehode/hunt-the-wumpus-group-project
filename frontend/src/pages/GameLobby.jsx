@@ -3,6 +3,9 @@ import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -57,14 +60,16 @@ function GameLobby() {
   };
 
   const handleFetchLobbies = async () => {
+    if (isLoading) return;
     setIsLoading(true);
     setError(null);
     setLobbies([]); // reset the array before fetching the updated list
     try {
       const response = await fetch(`${BASE_URL}/list`);
       const data = await response.json();
+      const newLobbies = [];
       data.games.forEach((game) => {
-        if (game.status === "open") {
+        if (game.status === "open" && !lobbies.includes(game.gameId)) {
           console.log("Adding lobby:", game.gameId, game.numPlayers);
           setLobbies((prev) => [...prev, [game.gameId, game.numPlayers]]);
         }
@@ -78,12 +83,13 @@ function GameLobby() {
 
   // fetch once at load
   useEffect(() => {
+    setLobbies([]);
     handleFetchLobbies();
   }, []);
 
   // debugging
   useEffect(() => {
-    console.log(lobbies);
+    console.log("Lobbies changed: ", lobbies);
   }, [lobbies]);
 
   const buttonStyle = {
@@ -152,7 +158,46 @@ function GameLobby() {
       >
         Slay the Dragon
       </h1>
-      <Box className="absolute left-10 xl:left-20 top-60 xl:top-20 h-4/6 xl:h-5/6 w-3/10 xl:w-2/8 bg-black/60 rounded-lg outline-2 outline-amber-300/50 p-2"></Box>
+      <Box className="absolute left-10 xl:left-20 top-60 xl:top-20 h-4/6 xl:h-5/6 w-3/10 xl:w-2/8 bg-black/60 rounded-lg outline-2 outline-amber-300/50 p-2">
+        <List>
+          <Button
+            sx={{ color: "orange", fontSize: "18px" }}
+            onClick={handleFetchLobbies}
+          >
+            &#10226;
+          </Button>
+          {lobbies.map((value, index) => (
+            <ListItem
+              key={`lobby-${index}`}
+              secondaryAction={
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={() => {
+                    setInputValue(value[0]);
+                  }}
+                  sx={{
+                    color: "orange",
+                    display: "flex",
+                    flexDirection: "col",
+                  }}
+                >
+                  Set to join
+                </Button>
+              }
+            >
+              <ListItemText
+                sx={{ color: "white", maxWidth: "50%" }}
+                primary={`Lobby: ${value[0].slice(0, 8)}`}
+              />
+              <ListItemText
+                sx={{ color: "white", maxWidth: "50%" }}
+                primary={`Players: ${value[1]}`}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
       <Stack
         spacing={2}
         sx={{
