@@ -155,9 +155,13 @@ function GameLobby() {
       >
         Slay the Dragon
       </h1>
-      <Box className="list">
+      <Box className="list flex flex-col ">
         <Button
-          sx={{ color: "orange", fontSize: "18px", alignSelf: "flex-end" }}
+          sx={{
+            color: "var(--color-title)",
+            fontSize: "18px",
+            alignSelf: "flex-end",
+          }}
           onClick={handleFetchLobbies}
         >
           &#10226;
