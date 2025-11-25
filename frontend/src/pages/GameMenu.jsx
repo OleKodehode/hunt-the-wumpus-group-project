@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+import Link from "@mui/material/Link";
 import { useState } from "react";
 
 const BASE_URL = `http://localhost:9001/api/game`;
@@ -23,7 +24,7 @@ function GameMenu() {
       });
       const data = await response.json();
       if (data.gameId && data.playerId) {
-        navigate(`/lobby/${data.gameId}`, {
+        navigate(`/game/${data.gameId}`, {
           state: { playerId: data.playerId },
         });
       }
@@ -120,6 +121,17 @@ function GameMenu() {
             {isLoading ? "Creating Game..." : "Start Game"}
           </p>
         </Button>
+
+        <Link href="/lobby/join">
+          <Button
+            size="large"
+            variant="text"
+            sx={buttonStyle}
+            disabled={isLoading}
+          >
+            <p className="text-[#d8c27a]">Join game</p>
+          </Button>
+        </Link>
         {error && <p>Error: {error.message}</p>}
       </Stack>
     </Box>

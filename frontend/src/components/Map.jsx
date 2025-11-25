@@ -1,7 +1,9 @@
+import Box from "@mui/material/Box";
+
 function Map() {
   return (
     <>
-      <h1>Hello from map!</h1>
+      <Box></Box>
     </>
   );
 }
