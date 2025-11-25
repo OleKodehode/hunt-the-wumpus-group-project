@@ -26,6 +26,7 @@ function GameLobby() {
   const navigate = useNavigate();
 
   const handleJoin = async () => {
+    if (isLoading) return;
     setIsLoading(true);
     setError(null);
 
@@ -81,6 +82,7 @@ function GameLobby() {
   };
 
   // fetch once at load
+  // While in strictmode it will make duplicate entries on the lobby list on load.
   useEffect(() => {
     setLobbies([]);
     handleFetchLobbies();
