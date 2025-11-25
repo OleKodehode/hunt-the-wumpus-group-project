@@ -155,14 +155,14 @@ function GameLobby() {
       >
         Slay the Dragon
       </h1>
-      <Box className="absolute left-10 xl:left-20 top-60 xl:top-20 h-4/6 xl:h-5/6 w-3/10 xl:w-2/8 bg-black/60 rounded-lg outline-2 outline-amber-300/50 p-2">
-        <List>
-          <Button
-            sx={{ color: "orange", fontSize: "18px" }}
-            onClick={handleFetchLobbies}
-          >
-            &#10226;
-          </Button>
+      <Box className="list">
+        <Button
+          sx={{ color: "orange", fontSize: "18px", alignSelf: "flex-end" }}
+          onClick={handleFetchLobbies}
+        >
+          &#10226;
+        </Button>
+        <List className="flex flex-col gap-2">
           {lobbies.map(({ gameId, numPlayers }, index) => (
             <ListItem
               key={`lobby-${index}`}

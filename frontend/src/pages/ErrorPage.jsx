@@ -40,9 +40,15 @@ function ErrorPage() {
   };
   return (
     <>
-      <div className="bg-[url('errorPage.jpg')] bg-cover bg-center h-[100dvh]">
+      <div className="bg-[url('/errorPage.jpg')] bg-cover bg-center h-dvh">
         <Container maxWidth="md" sx={containerStyle}>
-          <h1 className="errorFont text-6xl text-[var(--color-title)]">
+          <h1
+            style={{
+              WebkitTextStroke: "1px #000",
+              WebkitTextFillColor: "var(--color-title)",
+            }}
+            className="errorFont text-6xl text-(--color-title)"
+          >
             Lost? Let’s find your path again.
           </h1>
           <Link href="/">
