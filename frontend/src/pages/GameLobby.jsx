@@ -68,12 +68,8 @@ function GameLobby() {
     try {
       const response = await fetch(`${BASE_URL}/list`);
       const data = await response.json();
-      const newLobbies = [];
-      data.games.forEach((game) => {
-        if (game.status === "open" && !lobbies.includes(game.gameId)) {
-          setLobbies((prev) => [...prev, [game.gameId, game.numPlayers]]);
-        }
-      });
+      const newLobbies = data.games.filter((game) => game.status === "open");
+      setLobbies(newLobbies);
     } catch (e) {
       setError(e);
     } finally {
@@ -167,7 +163,7 @@ function GameLobby() {
           >
             &#10226;
           </Button>
-          {lobbies.map((value, index) => (
+          {lobbies.map(({ gameId, numPlayers }, index) => (
             <ListItem
               key={`lobby-${index}`}
               secondaryAction={
@@ -175,7 +171,7 @@ function GameLobby() {
                   size="small"
                   variant="text"
                   onClick={() => {
-                    setInputValue(value[0]);
+                    setInputValue(gameId);
                   }}
                   sx={{
                     color: "orange",
@@ -189,11 +185,11 @@ function GameLobby() {
             >
               <ListItemText
                 sx={{ color: "white", maxWidth: "50%" }}
-                primary={`Lobby: ${value[0].slice(0, 8)}`}
+                primary={`Lobby: ${gameId.slice(0, 8)}`}
               />
               <ListItemText
                 sx={{ color: "white", maxWidth: "50%" }}
-                primary={`Players: ${value[1]}`}
+                primary={`Players: ${numPlayers}`}
               />
             </ListItem>
           ))}
