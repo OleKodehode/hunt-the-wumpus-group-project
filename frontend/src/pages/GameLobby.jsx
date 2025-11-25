@@ -2,9 +2,9 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import Snackbar from "@mui/material/Snackbar";
+import Link from "@mui/material/Link";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const BASE_URL = `http://localhost:9001/api/game`;
 
@@ -54,6 +54,27 @@ function GameLobby() {
       setIsLoading(false);
     }
   };
+
+  const handleFetchLobbies = async () => {
+    let lobbies = [];
+    try {
+      const response = await fetch(`${BASE_URL}/list`);
+      const data = response.json();
+      data.then((data) =>
+        data.games.forEach((game) =>
+          lobbies.push([game.gameId, game.numPlayers])
+        )
+      );
+      console.log(lobbies);
+    } catch (e) {
+      setError(e);
+    }
+  };
+
+  // fetch once at load
+  useEffect(() => {
+    handleFetchLobbies();
+  }, []);
 
   const buttonStyle = {
     minWidth: "20dvw",
@@ -146,6 +167,16 @@ function GameLobby() {
           >
             Join the Game
           </Button>
+          <Link href="/">
+            <Button
+              size="large"
+              variant="text"
+              sx={buttonStyle}
+              onClick={handleJoin}
+            >
+              Back to Menu
+            </Button>
+          </Link>
         </div>
       </Stack>
     </Box>
