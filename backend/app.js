@@ -87,6 +87,7 @@ app.get('/api/game/:playerId/status', checkPlayerAndTurn, (req, res) => {
     arrows: playerStatus.arrows,
     perceptions: playerStatus.perceptions,
     isAlive: playerStatus.is_alive,
+    visitedLocations: playerStatus.visitedLocations,
     currentPlayer: req.game.playerOrder[req.game.currentPlayerIndex],
   });
 });
@@ -129,6 +130,10 @@ app.post('/api/game/:playerId/move', checkPlayerAndTurn, (req, res) => {
 
   if (isNaN(target)) {
     return res.status(400).json({ status: 'error', message: 'Invalid targetCave provided.' });
+  }
+
+  if (req.game.status === 'open') {
+      req.game.status = 'playing';
   }
 
   // Handle the turn logic
@@ -180,6 +185,10 @@ app.post('/api/game/:playerId/shoot', checkPlayerAndTurn, (req, res) => {
 
   if (isNaN(target)) {
     return res.status(400).json({ status: 'error', message: 'Invalid targetCave provided.' });
+  }
+
+  if (req.game.status === 'open') {
+      req.game.status = 'playing';
   }
 
   // Handle the turn logic
@@ -254,13 +263,14 @@ app.get('/api/game/:playerId/connect', (req, res) => {
  * Get data about locations of hazards
  */
 app.get('/api/game/:gameId/hazards', (req, res) => {
-  const { gameId } = req.params;
-  if (!gameId) {
-    return res.status(404).json(result);
-  }
+    const { gameId } = req.params;
+    const result = getHazardLocation(gameId);
 
-  const result = getHazardLocation(gameId);
-  res.json(result);
+    if (result.status === 'error') {
+        return res.status(404).json({ status: 'error', message: result.message });
+    }
+
+    res.json(result);
 });
 
 // Start the server
