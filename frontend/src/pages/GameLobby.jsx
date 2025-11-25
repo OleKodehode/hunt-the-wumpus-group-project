@@ -70,7 +70,6 @@ function GameLobby() {
       const newLobbies = [];
       data.games.forEach((game) => {
         if (game.status === "open" && !lobbies.includes(game.gameId)) {
-          console.log("Adding lobby:", game.gameId, game.numPlayers);
           setLobbies((prev) => [...prev, [game.gameId, game.numPlayers]]);
         }
       });
@@ -88,9 +87,9 @@ function GameLobby() {
   }, []);
 
   // debugging
-  useEffect(() => {
-    console.log("Lobbies changed: ", lobbies);
-  }, [lobbies]);
+  // useEffect(() => {
+  //   console.log("Lobbies changed: ", lobbies);
+  // }, [lobbies]);
 
   const buttonStyle = {
     minWidth: "20dvw",
