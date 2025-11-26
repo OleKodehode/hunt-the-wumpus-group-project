@@ -55,10 +55,10 @@ export default class WumpusServer {
 
     // Add random connections until each cave has up to 3 neighbors
     for (let i = 0; i < this.numCaves; i++) {
-      while (caves[i].size < 3) {
+      while (caves[i].size < 4) {
         const possible = [];
         for (let j = 0; j < this.numCaves; j++) {
-          if (j !== i && !caves[i].has(j) && caves[j].size < 3) {
+          if (j !== i && !caves[i].has(j) && caves[j].size < 4) {
             possible.push(j);
           }
         }
