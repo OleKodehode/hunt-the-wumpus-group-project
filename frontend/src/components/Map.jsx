@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { Box } from "@mui/material";
 
@@ -62,93 +62,104 @@ const SAMPLE_GRAPH = [
   [19, null, null, null], // 19
 ];
 
+function discoverGraph(graph, startRoomIndex = 0) {
+  // If we don't have a graph yet (e.g. still fetching), return empty
+  if (!graph) {
+    return {
+      discoveredMap: {},
+      bounds: { minX: 0, minY: 0, maxX: 0, maxY: 0 },
+    };
+  }
+
+  const discovered = {};
+  const visited = new Set();
+
+  // start from 0 so bounds grow from there
+  let minX = 0;
+  let minY = 0;
+  let maxX = 0;
+  let maxY = 0;
+
+  function discover(x, y, roomIndex) {
+    if (visited.has(roomIndex)) return;
+    visited.add(roomIndex);
+
+    // update bounding box
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x);
+    maxY = Math.max(maxY, y);
+
+    let tileType = "";
+
+    // loop over 4 directions: 0=W, 1=N, 2=E, 3=S
+    for (let i = 0; i < 4; i++) {
+      const nextRoom = graph[roomIndex][i];
+
+      if (nextRoom == null) {
+        // no connection in this direction
+        tileType += "-";
+        continue;
+      }
+
+      // there IS a connection in this direction
+      tileType += CARDINAL[i];
+
+      const [dx, dy] = DIRECTIONS[i];
+      discover(x + dx, y + dy, nextRoom);
+    }
+
+    // store the tile type by its coordinate
+    discovered[`${x},${y}`] = tileType;
+  }
+
+  // start exploring from room 0 at coordinate (0,0)
+  discover(0, 0, startRoomIndex);
+
+  return {
+    discoveredMap: discovered,
+    bounds: { minX, minY, maxX, maxY },
+  };
+}
+
 export default function Map() {
   const location = useLocation();
   const { playerId } = location.state || {};
 
   const [graph, setGraph] = useState(null);
-  const [discoveredMap, setDiscoveredMap] = useState({});
-  const [bounds, setBounds] = useState({ minX: 0, minY: 0, maxX: 0, maxY: 0 });
 
-  // ---------------------------------------------------
-  // Load graph (right now using SAMPLE_GRAPH)
-  // ---------------------------------------------------
+  // For now, we just load SAMPLE_GRAPH:
   useEffect(() => {
     setGraph(SAMPLE_GRAPH);
   }, []);
 
-  // ---------------------------------------------------
-  // Discover all rooms and map them to coordinates
-  // ---------------------------------------------------
-
-  useEffect(() => {
-    if (!graph) return;
-
-    const discovered = {};
-    const visited = new Set();
-
-    let minX = Infinity,
-      minY = Infinity;
-    let maxX = -Infinity,
-      maxY = -Infinity;
-
-    function discover(x, y, roomIndex) {
-      if (visited.has(roomIndex)) return;
-      visited.add(roomIndex);
-
-      minX = Math.min(minX, x);
-      minY = Math.min(minY, y);
-      maxX = Math.max(maxX, x);
-      maxY = Math.max(maxY, y);
-
-      let tileType = "";
-
-      for (let i = 0; i < 4; i++) {
-        const nextRoom = graph[roomIndex][i];
-
-        if (nextRoom === null || nextRoom === undefined) {
-          tileType += "-";
-          continue;
-        }
-
-        tileType += CARDINAL[i];
-
-        const [dx, dy] = DIRECTIONS[i];
-        discover(x + dx, y + dy, nextRoom);
-      }
-
-      discovered[`${x},${y}`] = tileType;
-    }
-
-    discover(0, 0, 0); // Start at room 0, coordinate (0,0)
-
-    setDiscoveredMap(discovered);
-    setBounds({ minX, minY, maxX, maxY });
-  }, [graph]);
-
-  // ---------------------------------------------------
-  // Compute grid layout
-  // ---------------------------------------------------
+  // ✅ useMemo: derive discoveredMap + bounds from graph
+  // This runs only when `graph` changes.
+  const { discoveredMap, bounds } = useMemo(
+    () => discoverGraph(graph),
+    [graph]
+  );
 
   const width = bounds.maxX - bounds.minX + 1;
   const height = bounds.maxY - bounds.minY + 1;
 
-  // ---------------------------------------------------
-  // Render discovered tiles
-  // ---------------------------------------------------
+  // If graph isn't loaded yet (e.g. fetching), show loading
+  if (!graph || Object.keys(discoveredMap).length === 0) {
+    return <div>Loading map...</div>;
+  }
 
   return (
     <Box
       sx={{
-        width: `1280px`,
-        height: `720px`,
-        border: `3px solid black`,
+        width: "1280px",
+        height: "720px",
+        border: "3px solid black",
         p: 2,
         overflow: "auto",
         display: "grid",
         gridTemplateColumns: `repeat(${width}, 64px)`,
         gridTemplateRows: `repeat(${height}, 64px)`,
-        gap: "2px",
+        gap: "0px",
       }}
     >
       {Object.entries(discoveredMap).map(([coord, tileType]) => {
@@ -164,6 +175,7 @@ export default function Map() {
             sx={{
               width: "64px",
               height: "64px",
+              // shift coordinates so minX/minY map to grid cell 1,1
               gridColumn: x - bounds.minX + 1,
               gridRow: y - bounds.minY + 1,
             }}
