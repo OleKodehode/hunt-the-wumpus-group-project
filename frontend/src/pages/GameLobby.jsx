@@ -107,10 +107,6 @@ function GameLobby() {
       inset 0 2px 6px rgba(255, 215, 130, 0.15),
       0 0 8px rgba(0,0,0,0.6)
     `,
-    // backgroundImage: "url(buttonTexture.jpg)",
-    // backgroundSize: "cover",
-    // backgroundPosition: "center",
-
     "&:hover": {
       background: "linear-gradient(to bottom, #1a0e07, #000000)",
       boxShadow: `
@@ -118,7 +114,6 @@ function GameLobby() {
         0 0 10px rgba(0,0,0,0.8)
       `,
     },
-
     "&::before": {
       content: '""',
       position: "absolute",
@@ -129,6 +124,55 @@ function GameLobby() {
       border: "1px solid #bfa46a",
       borderRadius: "4px",
       pointerEvents: "none",
+    },
+  };
+
+  const inputStyle = {
+    "& .MuiFilledInput-root": {
+      backgroundColor: "none",
+      borderTopLeftRadius: 5,
+      borderTopRightRadius: 5,
+
+      "&:hover": {
+        backgroundColor: "none",
+        borderBottom: "1px solid rgba(255, 215, 130, 0.25)",
+      },
+
+      "&.Mui-focused": {
+        backgroundColor: "#928f88a2",
+      },
+
+      "&:before": {
+        borderBottom: "5px solid rgba(255, 215, 130, 0.25)",
+        borderRadius: "2px",
+      },
+
+      "&:hover:before": {
+        borderBottom: "5px solid rgba(255, 215, 130, 0.25)",
+        borderRadius: "2px",
+      },
+
+      "&:after": {
+        borderBottom: "5px solid #bfa46a",
+        borderRadius: "2px",
+      },
+
+      "& .MuiFilledInput-input, & .MuiInputBase-input": {
+        fontSize: "16px !important",
+        fontFamily: "var(--font-title) !important",
+        color: "#1a0e07",
+        paddingTop: "30px",
+      },
+    },
+
+    "& .MuiInputLabel-root": {
+      color: "#FFD782",
+      fontFamily: "var(--font-button)",
+      fontSize: "16px",
+    },
+
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: "#FFD782",
     },
   };
 
@@ -212,9 +256,10 @@ function GameLobby() {
           <TextField
             id="outlined-basic"
             label="Enter Game ID to join"
-            variant="outlined"
+            variant="filled"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            sx={inputStyle}
           />
           <Button
             size="large"
