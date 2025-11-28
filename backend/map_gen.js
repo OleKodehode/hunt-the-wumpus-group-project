@@ -1,3 +1,5 @@
+import seedrandom from "seedrandom";
+
 class GridSquare {
   #type = null; // Room type
   #x = null; // x coord
@@ -104,13 +106,14 @@ class GameMap {
   #margin = 2;
   #generated = false;
 
-  constructor(grid, roomCount, trapCount, batCount) {
+  constructor(grid, seed, roomCount, trapCount, batCount) {
     this.grid = grid;
     this.width = grid.width;
     this.height = grid.height;
     this.roomCount = roomCount ?? 30; // Map is populated with more rooms than this due to pathing
     this.trapCount = trapCount ?? 4;
     this.batCount = batCount ?? 4;
+    this.rng = seedrandom(seed);
 
     if (this.width * this.height < this.roomCount) {
       throw new Error(`
@@ -124,20 +127,24 @@ class GameMap {
     }
   }
 
+  rng() {
+    return this.rng();
+  }
+
   // private function to add players and Wumpus
   #placeEntities() {
     console.log("placing players");
-    const p1x = Math.round(Math.random() * this.#margin);
-    const p1y = Math.round(Math.random() * this.#margin);
+    const p1x = Math.round(this.rng() * this.#margin);
+    const p1y = Math.round(this.rng() * this.#margin);
 
-    const p2x = Math.round(this.width - Math.random() * this.#margin - 1);
-    const p2y = Math.round(Math.random() * this.#margin);
+    const p2x = Math.round(this.width - this.rng() * this.#margin - 1);
+    const p2y = Math.round(this.rng() * this.#margin);
 
-    const p3x = Math.round(Math.random() * this.#margin);
-    const p3y = Math.round(this.height - Math.random() * this.#margin - 1);
+    const p3x = Math.round(this.rng() * this.#margin);
+    const p3y = Math.round(this.height - this.rng() * this.#margin - 1);
 
-    const p4x = Math.round(this.width - Math.random() * this.#margin - 1);
-    const p4y = Math.round(this.height - Math.random() * this.#margin - 1);
+    const p4x = Math.round(this.width - this.rng() * this.#margin - 1);
+    const p4y = Math.round(this.height - this.rng() * this.#margin - 1);
 
     this.grid.set(p1x, p1y, "player1");
     this.grid.set(p2x, p2y, "player2");
@@ -150,8 +157,8 @@ class GameMap {
     this.grid.set(centerX, centerY, "room");
 
     // Place Wumpus around the center.
-    const wumpX = Math.round(centerX + Math.random() * this.#margin);
-    const wumpY = Math.round(centerY + Math.random() * this.#margin);
+    const wumpX = Math.round(centerX + this.rng() * this.#margin);
+    const wumpY = Math.round(centerY + this.rng() * this.#margin);
     this.grid.set(wumpX, wumpY, "wumpus");
 
     // Get the placed rooms and connect them to the center via astar path finding
@@ -181,12 +188,12 @@ class GameMap {
     let placedBats = 0;
     while (placedRooms.length < this.roomCount) {
       // Room coordinates
-      const rx = Math.floor(Math.random() * this.width);
-      const ry = Math.floor(Math.random() * this.height);
+      const rx = Math.floor(this.rng() * this.width);
+      const ry = Math.floor(this.rng() * this.height);
 
       // Placing trap and bat conditions
-      const placeTrap = Math.random() > 0.25 && placedTraps < this.trapCount;
-      const placeBat = Math.random() > 0.25 && placedBats < this.batCount;
+      const placeTrap = this.rng() > 0.25 && placedTraps < this.trapCount;
+      const placeBat = this.rng() > 0.25 && placedBats < this.batCount;
 
       if (this.grid.getValue(rx, ry) !== null) continue;
 
@@ -225,7 +232,7 @@ class GameMap {
       }
 
       const connectToCenter =
-        Math.random() > 0.25 ? this.#aStar(room, centerRoom) : null;
+        this.rng() > 0.25 ? this.#aStar(room, centerRoom) : null;
       if (connectToCenter) {
         this.#connectRooms(connectToCenter);
       }
@@ -332,7 +339,7 @@ class GameMap {
 }
 
 const testGrid = new Grid(8, 8);
-const testMap = new GameMap(testGrid);
+const testMap = new GameMap(testGrid, "test");
 testMap.generate();
 
 // test function to visualize the grid made
@@ -406,8 +413,18 @@ function getJunctionSymbol(square) {
   return mapping[key] || " ";
 }
 
+/*
+Debugging lines:
+RNG with "test":
+0.6138032459118583
+0.28640606678869696
+*/
+
 console.log("=".repeat(30));
 displayMap(testMap.grid);
 console.log("=".repeat(30));
 displayMap(testMap.grid, false);
 console.log("=".repeat(30));
+
+console.log(testMap.rng());
+console.log(testMap.rng());
