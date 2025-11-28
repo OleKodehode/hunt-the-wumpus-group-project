@@ -7,6 +7,7 @@ class GridSquare {
   #grid = null; // the grid the square is tied to
 
   connectedRooms = [null, null, null, null]; // W N E S
+  connectedRoomsTypes = [];
 
   /**
    *
@@ -96,6 +97,18 @@ class Grid {
     return this.#gridSquares;
   }
 
+  squareIndex(index) {
+    return this.#gridSquares[index].value;
+  }
+
+  get map() {
+    const dungeonMap = [];
+    this.#gridSquares.forEach((square) =>
+      dungeonMap.push(square.connectedRooms)
+    );
+    return dungeonMap;
+  }
+
   getIndexOfSquare(square) {
     return square.index;
   }
@@ -112,9 +125,20 @@ class Grid {
       .map(([dx, dy]) => this.get(square.x + dx, square.y + dy))
       .filter((r) => r !== undefined && (!walkableOnly || r.value === "trap"));
   }
+
+  neighborsType(square) {
+    const dirs = [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ];
+
+    return dirs.map(([dx, dy]) => this.get(square.x + dx, square.y + dy).value);
+  }
 }
 
-class GameMap {
+export class GameMap {
   #margin = 2;
   #generated = false;
   wumpusPos = null;
@@ -143,7 +167,6 @@ class GameMap {
     this.wumpusSpawn = null;
     this.pits = [];
     this.bats = [];
-    this.playerNum = 1;
 
     if (this.width * this.height < this.roomCount) {
       throw new Error(`
@@ -184,7 +207,6 @@ class GameMap {
 
   // private function to add players and Wumpus
   #placeEntities() {
-    console.log("placing players");
     const p1x = Math.round(this.rng() * this.#margin);
     const p1y = Math.round(this.rng() * this.#margin);
 
@@ -392,6 +414,14 @@ class GameMap {
       a.connect(dir, b);
     }
   }
+
+  neighbors(sq) {
+    return this.grid.gridSquares[sq].connectedRooms;
+  }
+
+  get map() {
+    return this.grid.map;
+  }
 }
 
 const testGrid = new Grid(8, 8);
@@ -476,7 +506,7 @@ RNG with "test":
 0.28640606678869696
 */
 
-console.log("=".repeat(30));
+/* console.log("=".repeat(30));
 displayMap(testMap.grid);
 console.log("=".repeat(30));
 displayMap(testMap.grid, false);
@@ -490,6 +520,9 @@ console.log(`Player spawns:${testMap.playerSpawns}
     \nPits: ${testMap.pits}
     \nBats: ${testMap.bats}`);
 
-console.log(testMap.player1Pos);
-testMap.player1Pos = 2;
-console.log(testMap.player1Pos);
+console.log(testMap.grid.squareIndex(0));
+console.log(testMap.grid.squareIndex(1));
+console.log(testMap.grid.squareIndex(2));
+console.log(testMap.grid.squareIndex(3)); */
+
+// console.log(testMap.map);
