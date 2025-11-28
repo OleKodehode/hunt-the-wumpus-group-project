@@ -134,6 +134,10 @@ class GameMap {
     this.trapCount = trapCount ?? 4;
     this.batCount = batCount ?? 4;
     this.rng = seedrandom(seed);
+    this.playerSpawns = [];
+    this.wumpusSpawn = null;
+    this.pits = [];
+    this.bats = [];
 
     if (this.width * this.height < this.roomCount) {
       throw new Error(`
@@ -195,6 +199,9 @@ class GameMap {
     [p1, p2, p3, p4, wumpus].forEach((room) => {
       this.#connectRooms(this.#aStar(room, centerRoom));
     });
+
+    this.playerSpawns.push(p1.index, p2.index, p3.index, p4.index);
+    this.wumpusSpawn = wumpus.index;
   }
 
   // function to place rooms
@@ -220,11 +227,13 @@ class GameMap {
       if (placeTrap) {
         placedTraps++;
         this.grid.set(rx, ry, "trap");
+        this.pits.push(rx + ry * this.width);
         placedRooms.push(this.grid.get(rx, ry));
         continue;
       } else if (placeBat) {
         placedBats++;
         this.grid.set(rx, ry, "bat");
+        this.bats.push(rx + ry * this.width);
         placedRooms.push(this.grid.get(rx, ry));
         continue;
       } else {
@@ -351,11 +360,6 @@ class GameMap {
       a.connect(dir, b);
     }
   }
-
-  get generated() {
-    // Debugging purposes
-    return this.#generated;
-  }
 }
 
 const testGrid = new Grid(8, 8);
@@ -448,3 +452,8 @@ console.log("=".repeat(30));
 
 console.log(testMap.rng());
 console.log(testMap.rng());
+
+console.log(`Player spawns:${testMap.playerSpawns}
+    \nWumpus: ${testMap.wumpusSpawn}
+    \nPits: ${testMap.pits}
+    \nBats: ${testMap.bats}`);
