@@ -117,6 +117,11 @@ class Grid {
 class GameMap {
   #margin = 2;
   #generated = false;
+  wumpusPos = null;
+  player1Pos = null;
+  player2Pos = null;
+  player3Pos = null;
+  player4Pos = null;
 
   /**
    *
@@ -138,6 +143,7 @@ class GameMap {
     this.wumpusSpawn = null;
     this.pits = [];
     this.bats = [];
+    this.playerNum = 1;
 
     if (this.width * this.height < this.roomCount) {
       throw new Error(`
@@ -153,6 +159,27 @@ class GameMap {
 
   rng() {
     return this.rng();
+  }
+
+  set wumpusPos(newPos) {
+    console.log(newPos);
+    this.wumpusPos = newPos;
+  }
+
+  set player1Pos(newPos) {
+    this.player1Pos = newPos;
+  }
+
+  set player2Pos(newPos) {
+    this.player1Pos = newPos;
+  }
+
+  set player3Pos(newPos) {
+    this.player1Pos = newPos;
+  }
+
+  set player4Pos(newPos) {
+    this.player1Pos = newPos;
   }
 
   // private function to add players and Wumpus
@@ -202,6 +229,11 @@ class GameMap {
 
     this.playerSpawns.push(p1.index, p2.index, p3.index, p4.index);
     this.wumpusSpawn = wumpus.index;
+    this.player1Pos = p1.index;
+    this.player2Pos = p2.index;
+    this.player3Pos = p3.index;
+    this.player4Pos = p4.index;
+    this.wumpusPos = wumpus.index;
   }
 
   // function to place rooms
@@ -457,3 +489,7 @@ console.log(`Player spawns:${testMap.playerSpawns}
     \nWumpus: ${testMap.wumpusSpawn}
     \nPits: ${testMap.pits}
     \nBats: ${testMap.bats}`);
+
+console.log(testMap.player1Pos);
+testMap.player1Pos = 2;
+console.log(testMap.player1Pos);
