@@ -8,6 +8,13 @@ class GridSquare {
 
   connectedRooms = [null, null, null, null]; // W N E S
 
+  /**
+   *
+   * @param {Number} x X coordinate in a grid as a number
+   * @param {Number} y Y coordinate in a grid as a number
+   * @param {Grid} grid The instance of the Grid the GridSquare is a part of
+   * @param {String} type The type of room the GridSquare is. Optional - Gets set to null if nothing is provided.
+   */
   constructor(x, y, grid, type = null) {
     this.#type = type; // Value optional - Null means void/no room
     this.#x = x;
@@ -53,6 +60,11 @@ class GridSquare {
 class Grid {
   #gridSquares = [];
 
+  /**
+   *
+   * @param {Number} width Width of the grid
+   * @param {Number} height Height of the grid
+   */
   constructor(width, height) {
     this.width = width ?? 10;
     this.height = height ?? 10;
@@ -106,6 +118,14 @@ class GameMap {
   #margin = 2;
   #generated = false;
 
+  /**
+   *
+   * @param {Grid} grid a new instance of the class "Grid"
+   * @param {Any} seed Seed for RNG - Can be strings or numbers.
+   * @param {Number} roomCount Number of base rooms to add to the map - Will end up with more rooms than this number.
+   * @param {Number} trapCount Number of traps placed. Be reasonable
+   * @param {Number} batCount Number of bats placed. Be reasonable
+   */
   constructor(grid, seed, roomCount, trapCount, batCount) {
     this.grid = grid;
     this.width = grid.width;
