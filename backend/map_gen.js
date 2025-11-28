@@ -200,8 +200,8 @@ class GameMap {
   // function to place rooms
   generate() {
     if (this.#generated) throw new Error("Map has already been generated.");
-    this.#generated = true;
-    this.#placeEntities();
+    this.#generated = true; // Flag to prevent multiple calls to the function
+    this.#placeEntities(); // Placing of 4 players, center tile and Wumpus.
 
     const placedRooms = [];
     let placedTraps = 0;
@@ -252,7 +252,7 @@ class GameMap {
       }
 
       const connectToCenter =
-        this.rng() > 0.25 ? this.#aStar(room, centerRoom) : null;
+        this.rng() > 0.25 && index > 0 ? this.#aStar(room, centerRoom) : null;
       if (connectToCenter) {
         this.#connectRooms(connectToCenter);
       }
