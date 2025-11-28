@@ -6,7 +6,7 @@ import ErrorPage from "./pages/ErrorPage.jsx";
 import "./styles/globals.css";
 import GameLobby from "./pages/GameLobby.jsx";
 import Game from "./pages/Game.jsx";
-import Test from "./pages/Test.jsx";
+// import Test from "./pages/Test.jsx";
 
 const router = createBrowserRouter([
   { path: `/`, element: <GameMenu />, errorElement: <ErrorPage /> },
