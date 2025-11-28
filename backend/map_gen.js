@@ -120,13 +120,13 @@ class GameMap {
 
   /**
    *
-   * @param {Grid} grid a new instance of the class "Grid"
    * @param {Any} seed Seed for RNG - Can be strings or numbers.
-   * @param {Number} roomCount Number of base rooms to add to the map - Will end up with more rooms than this number.
-   * @param {Number} trapCount Number of traps placed. Be reasonable
-   * @param {Number} batCount Number of bats placed. Be reasonable
+   * @param {Grid} grid a new instance of the class "Grid". Optional - Default is new Grid(8,8)
+   * @param {Number} roomCount Number of base rooms to add to the map - Will end up with more rooms than this number. Optional - Default is 30
+   * @param {Number} trapCount Number of traps placed. Be reasonable. Optional - Default is 4
+   * @param {Number} batCount Number of bats placed. Be reasonable. Optional - Default is 4
    */
-  constructor(grid, seed, roomCount, trapCount, batCount) {
+  constructor(seed, grid = new Grid(8, 8), roomCount, trapCount, batCount) {
     this.grid = grid;
     this.width = grid.width;
     this.height = grid.height;
@@ -359,7 +359,7 @@ class GameMap {
 }
 
 const testGrid = new Grid(8, 8);
-const testMap = new GameMap(testGrid, "test");
+const testMap = new GameMap("test");
 testMap.generate();
 
 // test function to visualize the grid made
