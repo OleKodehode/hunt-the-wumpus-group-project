@@ -167,8 +167,6 @@ export function getGameList() {
       maxCaves,
       status: game.status,
       currentPlayer,
-      server: game.server,
-      map: game.server.map,
     });
   }
 
