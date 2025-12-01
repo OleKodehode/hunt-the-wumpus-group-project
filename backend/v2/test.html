@@ -4,8 +4,81 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Backend Testing</title>
+    
   </head>
   <body>
-    <h1>Test</h1>
+    <h1>API endpoint testing</h1>
+    <section>
+      <article>
+        <h2 id="lobbyText"></h2>
+        <h3 id="playerIdText"></h2>
+      </article>
+      <article>
+        <button onclick="createLobby(event)">Create Lobby</button>
+      </article>
+      <article>
+        <input type="text" id="lobbyToJoin" placeholder="Lobby-ID">
+        <button onclick="joinLobby(event)">Join Lobby</button>
+      </article>
+      <article>
+        
+      </article>
+    </section>
+
+
+
+
+    <script>
+      const BASE_URL = "http://localhost:9001/api/game/";
+      const lobbyText = document.getElementById("lobbyText");
+      const playerIdText = document.getElementById("playerIdText");
+      const lobbyToJoin = document.getElementById("lobbyToJoin");
+
+      console.log(lobbyToJoin);
+
+      async function createLobby(e) {
+        e.preventDefault();
+        try {
+          const response = await fetch(`${BASE_URL}create`);
+          if (!response.ok) {
+            throw new Error(`HTTP Error. Status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log("Success:", data);
+          const {gameId, playerId} = data;
+
+          lobbyText.innerText = `Game-ID: ${gameId}`;
+          playerIdText.innerText = `Player-ID: ${playerId}`;
+        } catch (err) {
+          console.log(err);
+        }
+      }
+
+      async function joinLobby(e) {
+        e.preventDefault();
+        
+        try {
+          const lobbyId = lobbyToJoin.value;
+          const response = await fetch(`${BASE_URL}${lobbyId}/join`, {method: "POST", headers:{"content-type": "application/json"}});
+          if (!response.ok) {
+            throw new Error(`Error joining the lobby: ${await response}`);
+          }
+
+          const data = await response.json();
+
+          const {playerId} = data;
+          console.log("Success:", data);
+          lobbyText.innerText = `Game-ID: ${lobbyId}`;
+          playerIdText.innerText = `Player-ID: ${playerId}`;
+
+
+        } catch (err) {
+          console.log(err);
+        }
+
+        lobbyToJoin.value = "";
+      }
+    </script>
   </body>
 </html>
