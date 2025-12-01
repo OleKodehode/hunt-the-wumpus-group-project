@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import path from "node:path";
 // game server stuff
 import {
   advanceTurn,
@@ -176,6 +177,11 @@ app.get("/api/game/:gameId/hazards", (req, res) => {
   res.json(result);
 });
 
+app.get("/", (req, res) => {
+  res.sendFile(path.join(process.cwd(), "/test.html"));
+});
+
 app.listen(PORT, () => {
   console.log(`Server listening to port ${PORT}`);
 });
+console.log(process.cwd());
