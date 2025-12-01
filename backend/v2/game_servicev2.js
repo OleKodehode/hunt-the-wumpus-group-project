@@ -30,8 +30,9 @@ export function createGame(req, res) {
     status: "open",
   };
 
-  playerToGame[playerId];
-  gameId;
+  playerToGame[playerId] = gameId;
+  // console.log(server.map);
+  // console.log(server);
 
   return {
     status: "ok",
@@ -77,8 +78,66 @@ export function joinGame(req, res) {
   };
 }
 
+export function leaveGame(playerId) {
+  if (!playerId) {
+    return { status: "error", message: "Invalid playerId" };
+  }
+
+  const gameId = playerToGame[playerId];
+
+  if (!gameId) {
+    return { status: "error", message: "Player not in any active games." };
+  }
+
+  const game = activeGames[gameId];
+
+  if (!game) {
+    delete playerToGame[playerId];
+    return { status: "error", message: "Game not found" };
+  }
+
+  // Remove player from queue
+  game.playerOrder = game.playerOrder.filter((id) => id !== playerId);
+
+  // Detach mapping
+  delete playerToGame[playerId];
+
+  // If the lobby is empty then remove the game
+  if (game.playerOrder.length === 0) {
+    delete activeGames[gameId];
+    return {
+      status: "ok",
+      message: "You have left the game. Lobby closed due to zero players.",
+    };
+  }
+
+  // Normalize currentPlayerIndex after removal
+  if (game.currentPlayerIndex >= game.playerOrder.length) {
+    game.currentPlayerIndex = 0;
+  }
+
+  return { status: "ok", message: "You left the game." };
+}
+
+export function deleteGame(gameId) {
+  if (!gameId) return;
+
+  const game = activeGames[gameId];
+  if (!game) return;
+
+  for (const playerId of game.playerOrder) {
+    if (!playerToGame[playerId]) continue;
+    delete playerToGame[playerId];
+  }
+
+  delete activeGames[gameId];
+
+  console.log(`Game ${gameId} successfully terminated.`);
+}
+
 export function getGameList() {
   const gameList = [];
+  const playerList = [];
 
   for (const gameId in activeGames) {
     const game = activeGames[gameId];
@@ -108,12 +167,137 @@ export function getGameList() {
       maxCaves,
       status: game.status,
       currentPlayer,
+      server: game.server,
+      map: game.server.map,
     });
+  }
+
+  for (const playerId in playerToGame) {
+    playerList.push(playerId);
   }
 
   return {
     status: "ok",
     count: gameList.length,
     games: gameList,
+    players: playerList,
+  };
+}
+
+export function advanceTurn(gameId) {
+  const game = activeGames[gameId];
+  if (!game) return;
+
+  game.currentPlayerIndex =
+    (game.currentPlayerIndex + 1) % game.playerOrder.length;
+
+  // Skip dead players
+  let attempts = 0;
+  while (
+    !game.server.gameState[game.playerOrder[game.currentPlayerIndex]]
+      ?.is_alive &&
+    attempts < game.playerOrder.length
+  ) {
+    game.currentPlayerIndex =
+      (game.currentPlayerIndex + 1) % game.playerOrder.length;
+    attempts++;
+  }
+}
+
+export function checkPlayerAndTurn(req, res, next) {
+  const { playerId } = req.params;
+  const gameId = playerToGame[playerId];
+  const game = activeGames[gameId];
+
+  if (!game) {
+    delete playerToGame[playerId];
+    return res.status(404).json({
+      status: "error",
+      message: "Game over! The game has ended and been closed by the server.",
+    });
+  }
+
+  if (!playerId || !gameId || !game) {
+    return res.status(404).json({
+      status: "error",
+      message: "Player or game not found.",
+    });
+  }
+
+  const server = game.server;
+
+  if (!server.gameState[playerId] || !server.gameState[playerId].is_alive) {
+    return res.status(400).json({
+      status: "lost",
+      message: "You are dead and cannot act.",
+    });
+  }
+
+  // Check turn order for action routes.
+  const isActionRoute =
+    req.path.includes("/move") || req.path.includes("/shoot");
+
+  const currentPlayerId = game.playerOrder[game.currentPlayerIndex];
+
+  if (isActionRoute && playerId !== currentPlayerId) {
+    return res.status(403).json({
+      status: "error",
+      message: `It is currently ${currentPlayerId}'s turn. Please wait!`,
+    });
+  }
+
+  req.games = server;
+  req.gameId = gameId;
+  req.playerId = playerId;
+  req.game = game;
+
+  next();
+}
+
+export function getTurnStatus(gameId) {
+  const game = activeGames[gameId];
+
+  if (!game) {
+    return {
+      status: "error",
+      message: `Game not found. ${gameId} - ${game}`,
+      currentPlayer: null,
+    };
+  }
+
+  const players = Array.isArray(game.playerOrder) ? game.playerOrder : [];
+  const idx =
+    typeof game.currentPlayerIndex === "number" ? game.currentPlayerIndex : -1;
+  const currentPlayer = idx >= 0 && idx < players.length ? players[idx] : null;
+
+  return {
+    status: "ok",
+    message: "Current turn status retrieved successfully.",
+    currentPlayer: currentPlayer,
+  };
+}
+
+export function getHazardLocation(gameId) {
+  console.log(gameId);
+  const game = activeGames[gameId];
+
+  if (!game) {
+    return {
+      status: "error",
+      message: "Game not found.",
+      hazards: null,
+    };
+  }
+
+  const hazards = game.server.getHazardLocation();
+
+  if (hazards.error) {
+    return { status: "error", message: hazards.error, hzards: null };
+  }
+
+  return {
+    status: "ok",
+    message: "Hazard locations retrieved successfully.",
+    hazards: hazards.hazards,
   };
 }

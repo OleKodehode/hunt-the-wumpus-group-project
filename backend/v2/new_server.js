@@ -233,6 +233,21 @@ export default class WumpusServerV2 {
     };
   }
 
+  getNeighbors(playerId) {
+    const player = this.gameState[playerId];
+    if (!player || !player.is_alive) {
+      return {
+        location: null,
+        arrows: 0,
+        perceptions: [],
+        is_alive: false,
+        visitedLocations: [],
+      };
+    }
+
+    return this.mapObject.neighbors(player.location);
+  }
+
   getHazardLocation() {
     if (this.numTiles === 0) {
       return { error: "Number of generated map = 0" };
@@ -255,8 +270,9 @@ export default class WumpusServerV2 {
 
 const test = new WumpusServerV2();
 
-console.log(test);
-console.log(test.map[60]);
-console.log(test.mapObject.neighbors(60));
+/* console.log(test);
+console.log(test.map[52]);
+console.log(test.mapObject.neighbors(52));
 console.log(test.getHazardLocation());
-// console.log(test.gameSeed);
+console.log(test.gameSeed);
+ */
