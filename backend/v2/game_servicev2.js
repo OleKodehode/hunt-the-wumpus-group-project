@@ -31,8 +31,6 @@ export function createGame(req, res) {
   };
 
   playerToGame[playerId] = gameId;
-  // console.log(server.map);
-  // console.log(server);
 
   return {
     status: "ok",
@@ -244,7 +242,7 @@ export function checkPlayerAndTurn(req, res, next) {
     });
   }
 
-  req.games = server;
+  req.gameServer = server;
   req.gameId = gameId;
   req.playerId = playerId;
   req.game = game;
@@ -276,7 +274,6 @@ export function getTurnStatus(gameId) {
 }
 
 export function getHazardLocation(gameId) {
-  console.log(gameId);
   const game = activeGames[gameId];
 
   if (!game) {

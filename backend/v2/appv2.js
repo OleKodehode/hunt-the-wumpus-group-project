@@ -119,8 +119,6 @@ app.get("/api/game/:playerId/map", checkPlayerAndTurn, (req, res) => {
 app.get("/api/game/:playerId/ways", checkPlayerAndTurn, (req, res) => {
   const ways = req.gameServer.getNeighbors(req.playerId);
 
-  console.log(location);
-
   res.json({
     status: "ok",
     ways: ways,
@@ -131,7 +129,7 @@ app.post("/api/game/:playerId/move", checkPlayerAndTurn, (req, res) => {
   const { targetCave } = req.body;
   const target = parseInt(targetCave);
 
-  if (isNan(target)) {
+  if (isNaN(target)) {
     return res.status(400).json({ status: "error", message: "Invalid target" });
   }
 
@@ -157,17 +155,63 @@ app.post("/api/game/:playerId/move", checkPlayerAndTurn, (req, res) => {
   });
 });
 
+app.post("/api/game/:playerId/shoot", checkPlayerAndTurn, (req, res) => {
+  const { targetCave } = req.body;
+  const target = parseInt(targetCave);
+
+  if (isNaN(target)) {
+    return res
+      .status(400)
+      .json({ status: "error", message: "Invalid targetCave provided." });
+  }
+
+  if (req.game.status === "open") {
+    req.game.status = "playing";
+  }
+
+  // Handle the turn logic
+  const result = req.gameServer.handlePlayerTurn(req.playerId, "shoot", target);
+
+  if (result.status !== "error") {
+    advanceTurn(req.gameId);
+  }
+
+  if (result.status === "win" || result.status === "lost") {
+    deleteGame(req.gameId);
+  }
+
+  res.json({
+    ...result,
+    currentPlayer: req.game.playerOrder[req.game.currentPlayerIndex],
+  });
+});
+
 app.post("/api/game/:playerId/pass", checkPlayerAndTurn, (req, res) => {
   const result = req.gameServer.handlePlayerTurn(
     req.playerId,
     "pass",
     undefined
   );
+
+  if (result.status !== "error") {
+    advanceTurn(req.gameId);
+  }
+
+  // Remove game on terminal state
+  if (result?.status === "win" || result?.status === "lost") {
+    if (req?.gameId) {
+      deleteGame(req.gameId);
+    }
+  }
+
+  res.json({
+    ...result,
+    currentPlayer: req.game.playerOrder[req.game.currentPlayerIndex],
+  });
 });
 
 app.get("/api/game/:gameId/hazards", (req, res) => {
   const { gameId } = req.params;
-  console.log(gameId);
   const result = getHazardLocation(gameId);
 
   if (result.status === "error") {

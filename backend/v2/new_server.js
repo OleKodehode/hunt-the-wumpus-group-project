@@ -212,7 +212,7 @@ export default class WumpusServerV2 {
     return result;
   }
 
-  getplayerStatus(playerId) {
+  getPlayerStatus(playerId) {
     const player = this.gameState[playerId];
     if (!player || !player.is_alive) {
       return {
