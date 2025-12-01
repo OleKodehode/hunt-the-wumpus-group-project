@@ -1,12 +1,13 @@
 // Based on master_controller.js made by MrHryhorii
 // Trying to make map_gen.js fit into this.
 
-import { GameMap } from "./map_gen.js";
+import { GameMap, Grid } from "./map_gen.js";
 
 export default class WumpusServerV2 {
   numPlayers = 0;
   constructor() {
-    this.gameSeed = Math.floor(Math.random() * 242000);
+    // this.gameSeed = Math.floor(Math.random() * 242000);
+    this.gameSeed = 1234;
 
     this.mapObject = new GameMap(this.gameSeed);
     this.mapObject.generate();
@@ -51,14 +52,14 @@ export default class WumpusServerV2 {
     ) {
       perceptions.push("There's a stench coming from a nearby room.");
     }
-    if (neighbors.some((n) => this.pits.has(n))) {
+    if (neighbors.some((n) => this.pits.includes(n))) {
       perceptions.push("There's a cold breeze coming from a nearby room.");
     }
-    if (neighbors.some((n) => this.bats.has(n))) {
+    if (neighbors.some((n) => this.bats.includes(n))) {
       perceptions.push("There are some chirping coming from a nearby room.");
     }
 
-    const otherPlayers = Object.entries(this.gameSate)
+    const otherPlayers = Object.entries(this.gameState)
       .filter(
         ([pid, state]) =>
           state.is_alive &&
@@ -87,14 +88,14 @@ export default class WumpusServerV2 {
       return;
     }
 
-    if (this.pits.has(newLocation)) {
+    if (this.pits.includes(newLocation)) {
       result.status = "lost";
       result.message += " You fell into a pit! Game over.";
       player.is_alive = false;
       return;
     }
 
-    if (this.bats.has(newLocation)) {
+    if (this.bats.includes(newLocation)) {
       // TODO: add a check to make sure the bat can't put you into a pit.
       const newCave = Math.floor(Math.random() * this.numTiles);
       player.location = newCave;
@@ -109,7 +110,7 @@ export default class WumpusServerV2 {
     if (this.wumpusLocation === null) return;
     if (Math.random() >= 1) return;
 
-    const neighbors = this.caves[this.wumpusLocation] || [];
+    const neighbors = this.map[this.wumpusLocation] || [];
     if (neighbors.length === 0) return;
 
     this.wumpusLocation =
@@ -135,10 +136,7 @@ export default class WumpusServerV2 {
     };
 
     if (action === "move") {
-      if (
-        targetCave === undefined ||
-        !this.caves[current].includes(targetCave)
-      ) {
+      if (targetCave === undefined || !this.map[current].includes(targetCave)) {
         return {
           status: "error",
           message: "Invalid move. Choose an adjacent cave.",
@@ -157,10 +155,7 @@ export default class WumpusServerV2 {
           perceptions: this._getPreceptions(current),
         };
       }
-      if (
-        targetCave === undefined ||
-        !this.caves[current].includes(targetCave)
-      ) {
+      if (targetCave === undefined || !this.map[current].includes(targetCave)) {
         return {
           status: "error",
           message: "Invalid target. You can only shoot into an adjacent cave.",
@@ -240,11 +235,11 @@ export default class WumpusServerV2 {
 
   getHazardLocation() {
     if (this.numTiles === 0) {
-      return { error: "Number of generated caves = 0" };
+      return { error: "Number of generated map = 0" };
     }
 
     return {
-      numCaves: this.numTiles,
+      nummap: this.numTiles,
       hazards: {
         wumpus: this.wumpusLocation,
         pits: Array.from(this.pits),
@@ -252,12 +247,16 @@ export default class WumpusServerV2 {
       },
     };
   }
+
+  getMapData() {
+    return this.map;
+  }
 }
 
 const test = new WumpusServerV2();
-/* 
+
 console.log(test);
 console.log(test.map[60]);
 console.log(test.mapObject.neighbors(60));
-console.log(test.getHazardLocation()); */
-console.log(test.gameSeed);
+console.log(test.getHazardLocation());
+// console.log(test.gameSeed);

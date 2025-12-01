@@ -58,7 +58,7 @@ class GridSquare {
   }
 }
 
-class Grid {
+export class Grid {
   #gridSquares = [];
 
   /**
@@ -67,8 +67,8 @@ class Grid {
    * @param {Number} height Height of the grid
    */
   constructor(width, height) {
-    this.width = width ?? 10;
-    this.height = height ?? 10;
+    this.width = width ?? 5;
+    this.height = height ?? 5;
 
     for (let i = 0; i < this.width * this.height; i++) {
       const x = i % this.width;
@@ -159,9 +159,9 @@ export class GameMap {
     this.grid = grid;
     this.width = grid.width;
     this.height = grid.height;
-    this.roomCount = roomCount ?? 30; // Map is populated with more rooms than this due to pathing
-    this.trapCount = trapCount ?? 4;
-    this.batCount = batCount ?? 4;
+    this.roomCount = roomCount ?? 15; // Map is populated with more rooms than this due to pathing
+    this.trapCount = trapCount ?? 2;
+    this.batCount = batCount ?? 2;
     this.rng = seedrandom(seed);
     this.playerSpawns = [];
     this.wumpusSpawn = null;
