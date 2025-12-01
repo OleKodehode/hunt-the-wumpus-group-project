@@ -164,7 +164,7 @@ app.post("/api/game/:playerId/pass", checkPlayerAndTurn, (req, res) => {
   );
 });
 
-app.get("api/game/:gameId/hazards", (req, res) => {
+app.get("/api/game/:gameId/hazards", (req, res) => {
   const { gameId } = req.params;
   console.log(gameId);
   const result = getHazardLocation(gameId);
