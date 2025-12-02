@@ -5,6 +5,7 @@ class GridSquare {
   #x = null; // x coord
   #y = null; // y coord
   #grid = null; // the grid the square is tied to
+  #array = [];
 
   connectedRooms = [null, null, null, null]; // W N E S
   connectedRoomsTypes = [];
@@ -167,6 +168,7 @@ export class GameMap {
     this.wumpusSpawn = null;
     this.pits = [];
     this.bats = [];
+    this.array = [];
 
     if (this.width * this.height < this.roomCount) {
       throw new Error(`
@@ -271,6 +273,8 @@ export class GameMap {
       // Room coordinates
       const rx = Math.floor(this.rng() * this.width);
       const ry = Math.floor(this.rng() * this.height);
+
+      this.array.push({rx, ry});
 
       // Placing trap and bat conditions
       const placeTrap = this.rng() > 0.25 && placedTraps < this.trapCount;
