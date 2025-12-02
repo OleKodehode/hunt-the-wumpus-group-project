@@ -16,51 +16,24 @@ const DIRECTIONS = [
 const CARDINAL = ["W", "N", "E", "S"];
 
 const TILE_IMAGES = {
-  "----": "/tiles/empty.png",
-  "W---": "/tiles/W.png",
-  "-N--": "/tiles/N.png",
-  "--E-": "/tiles/E.png",
-  "---S": "/tiles/S.png",
-  "W-E-": "/tiles/W.png",
-  "WN--": "/tiles/WN.png",
-  "W--S": "/tiles/W.png",
-  "-N-S": "/tiles/N.png",
-  "-NE-": "/tiles/NE.png",
-  "--ES": "/tiles/ES.png",
-  "WNE-": "/tiles/WNE.png",
-  "WN-S": "/tiles/WNS.png",
-  "W-ES": "/tiles/WES.png",
-  "-NES": "/tiles/NES.png",
+  "----": ["/tiles/empty.png"],
+  "W---": ["/tiles/W.png"],
+  "-N--": ["/tiles/N.png"],
+  "--E-": ["/tiles/E.png"],
+  "---S": ["/tiles/S.png"],
+  "W-E-": ["/tiles/WE.png"],
+  "WN--": ["/tiles/WN.png"],
+  "W--S": ["/tiles/WS.png"],
+  "-N-S": ["/tiles/NS.png"],
+  "-NE-": ["/tiles/NE.png"],
+  "--ES": ["/tiles/ES.png"],
+  "WNE-": ["/tiles/WNE.png"],
+  "WN-S": ["/tiles/WNS.png"],
+  "W-ES": ["/tiles/WES.png"],
+  "-NES": ["/tiles/NES.png"],
   //prettier-ignore
-  "WNES": "/tiles/WNES.png",
+  "WNES": ["/tiles/WNES.png"],
 };
-
-// ----------------------------------------------
-// TEMP hardcoded sample graph
-// ----------------------------------------------
-
-// const SAMPLE_GRAPH = [
-//   [1, null, null, null], // 0
-//   [null, null, 0, 2], // 1
-//   [null, 1, 3, null], // 2
-//   [2, null, 4, null], // 3
-//   [3, null, 5, null], // 4
-//   [4, null, 6, null], // 5
-//   [5, 7, null, null], // 6
-//   [null, null, 8, 6], // 7
-//   [7, null, null, 9], // 8
-//   [null, 8, null, 10], // 9
-//   [null, 9, 11, null], // 10
-//   [10, 12, null, null], // 11
-//   [null, 13, null, 11], // 12
-//   [null, 14, null, 12], // 13
-//   [null, 15, null, 13], // 14
-//   [null, 16, 17, 14], // 15
-//   [null, null, null, 16], // 16
-//   [15, null, 18, null], // 17
-//   [17, null, 19, null], // 18
-//   [19, null, null, null], // 19
-// ];
 
 function discoverGraph(graph, startRoomIndex = 0) {
   // If we don't have a graph yet (e.g. still fetching), return empty
@@ -166,8 +139,6 @@ export default function Map() {
 
   console.log(graph);
 
-  // ✅ useMemo: derive discoveredMap + bounds from graph
-  // This runs only when `graph` changes.
   const { discoveredMap, bounds } = useMemo(
     () => discoverGraph(graph),
     [graph]
@@ -190,14 +161,18 @@ export default function Map() {
         p: 2,
         overflow: "auto",
         display: "grid",
-        gridTemplateColumns: `repeat(${width}, 64px)`,
-        gridTemplateRows: `repeat(${height}, 64px)`,
+        gridTemplateColumns: `repeat(${width}, 96px)`,
+        gridTemplateRows: `repeat(${height}, 96px)`,
         gap: "0px",
       }}
     >
       {Object.entries(discoveredMap).map(([coord, tileType]) => {
         const [x, y] = coord.split(",").map(Number);
-        const imgSrc = TILE_IMAGES[tileType] || "/tiles/empty.png";
+        const imgSrc =
+          TILE_IMAGES[tileType][
+            Math.floor(Math.random() * TILE_IMAGES[tileType].length) %
+              TILE_IMAGES[tileType].length
+          ] || "/tiles/empty.png";
 
         return (
           <Box
@@ -206,8 +181,8 @@ export default function Map() {
             src={imgSrc}
             alt={tileType}
             sx={{
-              width: "64px",
-              height: "64px",
+              width: "96px",
+              height: "96px",
               // shift coordinates so minX/minY map to grid cell 1,1
               gridColumn: x - bounds.minX + 1,
               gridRow: y - bounds.minY + 1,
