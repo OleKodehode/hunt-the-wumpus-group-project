@@ -68,7 +68,7 @@ function GameLobby() {
     try {
       const response = await fetch(`${BASE_URL}/list`);
       const data = await response.json();
-      const newLobbies = data.games.filter((game) => game.status === "open");
+      const newLobbies = data.filter((game) => game.status === "open");
       setLobbies(newLobbies);
     } catch (e) {
       setError(e);
