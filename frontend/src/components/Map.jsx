@@ -18,13 +18,13 @@ const CARDINAL = ["W", "N", "E", "S"];
 const TILE_IMAGES = {
   "----": "/tiles/empty.png",
   "W---": "/tiles/W.png",
-  "-N--": "/tiles/S.png",
+  "-N--": "/tiles/N.png",
   "--E-": "/tiles/E.png",
   "---S": "/tiles/S.png",
   "W-E-": "/tiles/W.png",
   "WN--": "/tiles/WN.png",
-  "W--S": "/tiles/WS.png",
-  "-N-S": "/tiles/S.png",
+  "W--S": "/tiles/W.png",
+  "-N-S": "/tiles/N.png",
   "-NE-": "/tiles/NE.png",
   "--ES": "/tiles/ES.png",
   "WNE-": "/tiles/WNE.png",
@@ -39,28 +39,28 @@ const TILE_IMAGES = {
 // TEMP hardcoded sample graph
 // ----------------------------------------------
 
-const SAMPLE_GRAPH = [
-  [1, null, null, null], // 0
-  [null, null, 0, 2], // 1
-  [null, 1, 3, null], // 2
-  [2, null, 4, null], // 3
-  [3, null, 5, null], // 4
-  [4, null, 6, null], // 5
-  [5, 7, null, null], // 6
-  [null, null, 8, 6], // 7
-  [7, null, null, 9], // 8
-  [null, 8, null, 10], // 9
-  [null, 9, 11, null], // 10
-  [10, 12, null, null], // 11
-  [null, 13, null, 11], // 12
-  [null, 14, null, 12], // 13
-  [null, 15, null, 13], // 14
-  [null, 16, 17, 14], // 15
-  [null, null, null, 16], // 16
-  [15, null, 18, null], // 17
-  [17, null, 19, null], // 18
-  [19, null, null, null], // 19
-];
+// const SAMPLE_GRAPH = [
+//   [1, null, null, null], // 0
+//   [null, null, 0, 2], // 1
+//   [null, 1, 3, null], // 2
+//   [2, null, 4, null], // 3
+//   [3, null, 5, null], // 4
+//   [4, null, 6, null], // 5
+//   [5, 7, null, null], // 6
+//   [null, null, 8, 6], // 7
+//   [7, null, null, 9], // 8
+//   [null, 8, null, 10], // 9
+//   [null, 9, 11, null], // 10
+//   [10, 12, null, null], // 11
+//   [null, 13, null, 11], // 12
+//   [null, 14, null, 12], // 13
+//   [null, 15, null, 13], // 14
+//   [null, 16, 17, 14], // 15
+//   [null, null, null, 16], // 16
+//   [15, null, 18, null], // 17
+//   [17, null, 19, null], // 18
+//   [19, null, null, null], // 19
+// ];
 
 function discoverGraph(graph, startRoomIndex = 0) {
   // If we don't have a graph yet (e.g. still fetching), return empty
@@ -122,16 +122,49 @@ function discoverGraph(graph, startRoomIndex = 0) {
   };
 }
 
+const BASE_URL = `http://localhost:9001/api/game`;
+
 export default function Map() {
   const location = useLocation();
   const { playerId } = location.state || {};
 
   const [graph, setGraph] = useState(null);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // For now, we just load SAMPLE_GRAPH:
+  // Fetching map from API:
   useEffect(() => {
-    setGraph(SAMPLE_GRAPH);
-  }, []);
+    if (!playerId) {
+      return <div>No player selected.</div>;
+    }
+
+    let isMounted = true;
+
+    const fetchMap = async () => {
+      setIsLoading(true);
+
+      try {
+        const response = await fetch(`${BASE_URL}/${playerId}/map`, {
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const data = await response.json();
+        if (isMounted) setGraph(data);
+      } catch (e) {
+        if (isMounted) setError(e);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    fetchMap();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [playerId]);
+
+  console.log(graph);
 
   // ✅ useMemo: derive discoveredMap + bounds from graph
   // This runs only when `graph` changes.

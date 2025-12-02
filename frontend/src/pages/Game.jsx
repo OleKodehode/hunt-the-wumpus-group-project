@@ -15,7 +15,9 @@ function Game() {
 
   return (
     <div className="m-5">
-      <h1>Game {gameId}</h1>
+      <h1 className="cursor-pointer hover:text-(--color-title)" onClick={copy}>
+        Game {gameId}
+      </h1>
       <Snackbar
         open={open}
         autoHideDuration={2000}
