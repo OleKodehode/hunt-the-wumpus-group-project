@@ -16,7 +16,8 @@ function Game() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [coordinates, setCoordinates] = useState([]);
-  const [isLoadingCoords, setIsLoadingCoords] = useState(true);
+  const [graph, setGraph] = useState(null);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   // Fetching player status
 
@@ -43,34 +44,46 @@ function Game() {
     }
   };
 
-  // Fetching map coordinates
-
+  // Fetching map data (coordinates and graph)
   useEffect(() => {
-    const fetchMapCoordinates = async () => {
+    const fetchMapData = async () => {
       if (!playerId) {
-        return <div>No player selected.</div>;
+        return;
       }
-
+      setIsLoadingData(true);
       try {
-        const response = await fetch(`${BASE_URL}/${playerId}/coordinates`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+        // Fetch both coordinates and graph
+        const [coordsRes, graphRes] = await Promise.all([
+          fetch(`${BASE_URL}/${playerId}/coordinates`),
+          fetch(`${BASE_URL}/${playerId}/map`),
+        ]);
+
+        if (!coordsRes.ok) {
+          throw new Error(`Failed to fetch coordinates: ${coordsRes.status}`);
+        }
+        if (!graphRes.ok) {
+          throw new Error(`Failed to fetch graph: ${graphRes.status}`);
         }
 
-        const data = await response.json();
-        setCoordinates(data);
+        const coordsData = await coordsRes.json();
+        const graphData = await graphRes.json();
+
+        setCoordinates(coordsData);
+        setGraph(graphData);
       } catch (err) {
-        console.error(`Failed to fetch map coordinates`, err);
+        console.error("Failed to fetch map data:", err);
         setError(err);
       } finally {
-        setIsLoadingCoords(false);
+        setIsLoadingData(false);
       }
     };
-    fetchMapCoordinates();
+
+    fetchMapData();
   }, [playerId]);
 
   //Periodically refreshing player status
   useEffect(() => {
+    if (!playerId) return;
     fetchPlayerStatus();
     const intervalId = setInterval(fetchPlayerStatus, 3000);
 
@@ -79,22 +92,27 @@ function Game() {
     };
   }, [playerId]);
 
+  //Copy function
   const copy = () => {
     navigator.clipboard.writeText(gameId);
     setOpen(true);
   };
 
-  if (isLoading) {
-    return <p>Loading game status...</p>;
+  if (isLoading || isLoadingData) {
+    return <p>Loading game data...</p>;
   }
 
   if (error) {
-    return <p>Error loading game status: {error.message}</p>;
+    return <p>Error loading game data: {error.message}</p>;
   }
 
   return (
     <div className="m-5 flex flex-row gap-50">
-      <Map playerLocation={playerLocation} coordinates={coordinates} />
+      <Map
+        playerLocation={playerLocation}
+        coordinates={coordinates}
+        graph={graph}
+      />
       <div>
         <h1
           className="cursor-pointer hover:text-(--color-title)"

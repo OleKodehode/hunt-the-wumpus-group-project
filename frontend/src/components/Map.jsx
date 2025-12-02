@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useMemo } from "react";
 import { Box } from "@mui/material";
+import Player from "./Player";
 
 // ----------------------------------------------
 // Direction + tile lookup constants
@@ -67,7 +67,7 @@ function discoverGraph(graph, startRoomIndex = 0) {
 
     // loop over 4 directions: 0=W, 1=N, 2=E, 3=S
     for (let i = 0; i < 4; i++) {
-      const nextRoom = graph[roomIndex][i];
+      const nextRoom = graph[roomIndex] ? graph[roomIndex][i] : null;
 
       if (nextRoom == null) {
         // no connection in this direction
@@ -95,48 +95,7 @@ function discoverGraph(graph, startRoomIndex = 0) {
   };
 }
 
-const BASE_URL = `http://localhost:9001/api/game`;
-
-export default function Map() {
-  const location = useLocation();
-  const { playerId } = location.state || {};
-
-  const [graph, setGraph] = useState(null);
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Fetching map from API:
-  useEffect(() => {
-    if (!playerId) {
-      return <div>No player selected.</div>;
-    }
-
-    let isMounted = true;
-
-    const fetchMap = async () => {
-      setIsLoading(true);
-
-      try {
-        const response = await fetch(`${BASE_URL}/${playerId}/map`, {
-          headers: { "Content-Type": "application/json" },
-        });
-
-        const data = await response.json();
-        if (isMounted) setGraph(data);
-      } catch (e) {
-        if (isMounted) setError(e);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
-    fetchMap();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [playerId]);
-
+export default function Map({ playerLocation, coordinates, graph }) {
   const { discoveredMap, bounds } = useMemo(
     () => discoverGraph(graph),
     [graph]
@@ -145,10 +104,15 @@ export default function Map() {
   const width = bounds.maxX - bounds.minX + 1;
   const height = bounds.maxY - bounds.minY + 1;
 
-  // If graph isn't loaded yet (e.g. fetching), show loading
+  // If graph isn't loaded yet, show loading
   if (!graph || Object.keys(discoveredMap).length === 0) {
     return <div>Loading map...</div>;
   }
+
+  const playerCoords =
+    playerLocation !== null && coordinates[playerLocation]
+      ? coordinates[playerLocation]
+      : null;
 
   return (
     <Box
@@ -162,14 +126,14 @@ export default function Map() {
         gridTemplateColumns: `repeat(${width}, 96px)`,
         gridTemplateRows: `repeat(${height}, 96px)`,
         gap: "0px",
+        position: "relative", // Needed for z-indexed children
       }}
     >
       {Object.entries(discoveredMap).map(([coord, tileType]) => {
         const [x, y] = coord.split(",").map(Number);
         const imgSrc =
-          TILE_IMAGES[tileType][
-            Math.floor(Math.random() * TILE_IMAGES[tileType].length) %
-              TILE_IMAGES[tileType].length
+          TILE_IMAGES[tileType]?.[
+            Math.floor(Math.random() * (TILE_IMAGES[tileType]?.length || 1))
           ] || "/tiles/empty.png";
 
         return (
@@ -188,6 +152,24 @@ export default function Map() {
           />
         );
       })}
+
+      {/* Render Player */}
+      {playerCoords && (
+        <Box
+          sx={{
+            gridColumn: playerCoords.x - bounds.minX + 1,
+            gridRow: playerCoords.y - bounds.minY + 1,
+            width: "96px",
+            height: "96px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1, // Ensure player is on top of tiles
+          }}
+        >
+          <Player />
+        </Box>
+      )}
     </Box>
   );
 }
