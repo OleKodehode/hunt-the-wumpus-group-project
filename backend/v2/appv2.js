@@ -99,30 +99,23 @@ app.get("/api/game/:playerId/status", checkPlayerAndTurn, (req, res) => {
   const playerStatus = req.gameServer.getPlayerStatus(req.playerId);
 
   res.json({
-    status: "ok",
     location: playerStatus.location,
     arrows: playerStatus.arrows,
-    perceptions: playerStatus.perceptions,
     isAlive: playerStatus.is_alive,
+    perceptions: playerStatus.perceptions,
     visitedLocations: playerStatus.visitedLocations,
     currentPlayer: req.game.playerOrder[req.game.currentPlayerIndex],
   });
 });
 
 app.get("/api/game/:playerId/map", checkPlayerAndTurn, (req, res) => {
-  res.json({
-    status: "ok",
-    map: req.gameServer.getMapData(),
-  });
+  res.json(req.gameServer.getMapData());
 });
 
 app.get("/api/game/:playerId/ways", checkPlayerAndTurn, (req, res) => {
   const ways = req.gameServer.getNeighbors(req.playerId);
 
-  res.json({
-    status: "ok",
-    ways: ways,
-  });
+  res.json(ways);
 });
 
 app.post("/api/game/:playerId/move", checkPlayerAndTurn, (req, res) => {

@@ -159,9 +159,9 @@ export class GameMap {
     this.grid = grid;
     this.width = grid.width;
     this.height = grid.height;
-    this.roomCount = roomCount ?? 15; // Map is populated with more rooms than this due to pathing
-    this.trapCount = trapCount ?? 2;
-    this.batCount = batCount ?? 2;
+    this.roomCount = roomCount ?? 30; // Map is populated with more rooms than this due to pathing
+    this.trapCount = trapCount ?? 4;
+    this.batCount = batCount ?? 4;
     this.rng = seedrandom(seed);
     this.playerSpawns = [];
     this.wumpusSpawn = null;

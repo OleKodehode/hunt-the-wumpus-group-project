@@ -6,8 +6,8 @@ import { GameMap, Grid } from "./map_gen.js";
 export default class WumpusServerV2 {
   numPlayers = 0;
   constructor() {
-    // this.gameSeed = Math.floor(Math.random() * 242000);
-    this.gameSeed = 1234;
+    this.gameSeed = Math.floor(Math.random() * 242000);
+    // this.gameSeed = 1234; // For testing only
 
     this.mapObject = new GameMap(this.gameSeed);
     this.mapObject.generate();
@@ -227,9 +227,10 @@ export default class WumpusServerV2 {
     return {
       location: player.location,
       arrows: player.arrows,
-      perceptions: this._getPreceptions(player.location),
       is_alive: player.is_alive,
+      perceptions: this._getPreceptions(player.location),
       visitedLocations: player.visitedLocations,
+      currentplayer: player,
     };
   }
 
@@ -264,7 +265,12 @@ export default class WumpusServerV2 {
   }
 
   getMapData() {
-    return this.map;
+    const dungeonMap = {};
+    this.map.forEach((room, index) => {
+      dungeonMap[index] = room;
+    });
+
+    return dungeonMap;
   }
 }
 

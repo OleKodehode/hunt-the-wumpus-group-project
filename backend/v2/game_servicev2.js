@@ -35,6 +35,7 @@ export function createGame(req, res) {
   return {
     status: "ok",
     message: "New game created. Share this gameId for others to join.",
+    preceptions: server._getPreceptions(startLocation),
     gameId,
     playerId,
     startLocation,
@@ -70,9 +71,11 @@ export function joinGame(req, res) {
   return {
     status: "ok",
     message: `Joined game ${gameId}. Go kill wumpus!`,
+    preceptions: game.server._getPreceptions(startLocation),
     playerId,
     startLocation,
-    numPlayers: game.playerOrder.length,
+    numCaves: game.server.numTiles,
+    currentPlayer: game.playerOrder[game.currentPlayerIndex],
   };
 }
 
@@ -135,7 +138,6 @@ export function deleteGame(gameId) {
 
 export function getGameList() {
   const gameList = [];
-  const playerList = [];
 
   for (const gameId in activeGames) {
     const game = activeGames[gameId];
@@ -161,23 +163,14 @@ export function getGameList() {
 
     gameList.push({
       gameId,
+      status: game.status,
       numPlayers,
       maxCaves,
-      status: game.status,
       currentPlayer,
     });
   }
 
-  for (const playerId in playerToGame) {
-    playerList.push(playerId);
-  }
-
-  return {
-    status: "ok",
-    count: gameList.length,
-    games: gameList,
-    players: playerList,
-  };
+  return gameList;
 }
 
 export function advanceTurn(gameId) {
