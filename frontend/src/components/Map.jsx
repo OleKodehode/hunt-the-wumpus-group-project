@@ -137,8 +137,6 @@ export default function Map() {
     };
   }, [playerId]);
 
-  console.log(graph);
-
   const { discoveredMap, bounds } = useMemo(
     () => discoverGraph(graph),
     [graph]
