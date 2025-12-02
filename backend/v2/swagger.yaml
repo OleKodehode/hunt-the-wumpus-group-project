@@ -224,6 +224,28 @@ paths:
         "404":
           description: Player or Game not found.
 
+  /{playerId}/coordinates:
+    get:
+      tags: [Information]
+      summary: Retrieves the full cave map coordinate layout.
+      description: |
+        Provides an indexable array of coordinates with X and Y values.
+      parameters:
+        - in: path
+          name: playerId
+          required: true
+          schema: { type: "string" }
+      responses:
+        "200":
+          description: Full coordinate data returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                $ref: "#/components/schemas/CoordinateMapReponse"
+        "404":
+          description: Player or Game not found.
+
   /{playerId}/ways:
     get:
       tags: [Information]
@@ -478,6 +500,19 @@ components:
         "1": [0, null, 2, null]
         "2": [1, null, null, 10]
         # ... and so on for all caves
+
+    CoordinateMapReponse:
+      type: object
+      properties:
+        x:
+          type: integer
+          example: 0
+        y:
+          type: integer
+          example: 0
+      required:
+        - x
+        - y
 
     # 1. Endpoints: /create
     CreateResponse:

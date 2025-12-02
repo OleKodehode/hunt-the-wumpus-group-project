@@ -112,6 +112,10 @@ app.get("/api/game/:playerId/map", checkPlayerAndTurn, (req, res) => {
   res.json(req.gameServer.getMapData());
 });
 
+app.get("/api/game/:playerId/coordinates", checkPlayerAndTurn, (req, res) => {
+  res.json(req.gameServer.mapObject.coordinates);
+});
+
 app.get("/api/game/:playerId/ways", checkPlayerAndTurn, (req, res) => {
   const ways = req.gameServer.getNeighbors(req.playerId);
 

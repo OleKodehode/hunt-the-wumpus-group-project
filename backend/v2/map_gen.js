@@ -25,7 +25,7 @@ class GridSquare {
   }
 
   get info() {
-    return [this.#x, this.#y, this.#grid, this.#type]; // mostly debugging
+    return { x: this.#x, y: this.#y }; // mostly debugging
   }
 
   get value() {
@@ -168,7 +168,7 @@ export class GameMap {
     this.wumpusSpawn = null;
     this.pits = [];
     this.bats = [];
-    this.array = [];
+    this.coordinates = [];
 
     if (this.width * this.height < this.roomCount) {
       throw new Error(`
@@ -274,8 +274,6 @@ export class GameMap {
       const rx = Math.floor(this.rng() * this.width);
       const ry = Math.floor(this.rng() * this.height);
 
-      this.array.push({rx, ry});
-
       // Placing trap and bat conditions
       const placeTrap = this.rng() > 0.25 && placedTraps < this.trapCount;
       const placeBat = this.rng() > 0.25 && placedBats < this.batCount;
@@ -324,6 +322,8 @@ export class GameMap {
         this.#connectRooms(connectToCenter);
       }
     });
+
+    this.coordinates = this.grid.gridSquares.map((square) => square.info);
   }
   // private function for astar
   #aStar(start, goal) {
@@ -491,6 +491,24 @@ function displayMap(grid, showRooms = true) {
   }
 }
 
+function displayMapIndecis(grid) {
+  for (let iy = 0; iy < grid.height; iy++) {
+    let line = "";
+    for (let ix = 0; ix < grid.width; ix++) {
+      const sq = grid.get(ix, iy);
+      if (sq.value === "room" || sq.value === "path") {
+        line +=
+          grid.getIndexOfSquare(sq) < 10
+            ? `0${grid.getIndexOfSquare(sq)} `
+            : grid.getIndexOfSquare(sq) + " ";
+      } else {
+        line += "  ";
+      }
+    }
+    console.log(line);
+  }
+}
+
 function getJunctionSymbol(square) {
   if (!square) return "X";
   const dirs = ["W", "N", "E", "S"];
@@ -510,23 +528,28 @@ RNG with "test":
 0.28640606678869696
 */
 
-/* console.log("=".repeat(30));
-displayMap(testMap.grid);
-console.log("=".repeat(30));
-displayMap(testMap.grid, false);
-console.log("=".repeat(30));
+// console.log("=".repeat(30));
+// displayMap(testMap.grid);
+// console.log("=".repeat(30));
+// displayMap(testMap.grid, false);
+// console.log("=".repeat(30));
+// displayMapIndecis(testMap.grid);
 
-console.log(testMap.rng());
-console.log(testMap.rng());
+// /* console.log(testMap.rng());
+// console.log(testMap.rng()); */
 
-console.log(`Player spawns:${testMap.playerSpawns}
-    \nWumpus: ${testMap.wumpusSpawn}
-    \nPits: ${testMap.pits}
-    \nBats: ${testMap.bats}`);
+// console.log(`Player spawns:${testMap.playerSpawns}
+//     \nWumpus: ${testMap.wumpusSpawn}
+//     \nPits: ${testMap.pits}
+//     \nBats: ${testMap.bats}`);
 
-console.log(testMap.grid.squareIndex(0));
-console.log(testMap.grid.squareIndex(1));
-console.log(testMap.grid.squareIndex(2));
-console.log(testMap.grid.squareIndex(3)); */
+// /* console.log(testMap.grid.squareIndex(0));
+// console.log(testMap.grid.squareIndex(1));
+// console.log(testMap.grid.squareIndex(2));
+// console.log(testMap.grid.squareIndex(3)); */
 
-// console.log(testMap.map);
+// // console.log(testMap.map);
+// console.log(testMap.coordinates);
+
+// const playerSpawn = 10;
+// console.log(testMap.coordinates[playerSpawn], testMap.map[playerSpawn]);
