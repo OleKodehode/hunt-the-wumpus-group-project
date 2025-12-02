@@ -17,7 +17,7 @@ import {
 
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
-const swaggerDocument = YAML.load("./swagger.yaml");
+const swaggerDocument = YAML.load("./v2/swagger.yaml");
 
 const PORT = process.env.PORT || 3000;
 const app = express();
