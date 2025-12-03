@@ -5,7 +5,6 @@ class GridSquare {
   #x = null; // x coord
   #y = null; // y coord
   #grid = null; // the grid the square is tied to
-  #array = [];
 
   connectedRooms = [null, null, null, null]; // W N E S
   connectedRoomsTypes = [];
@@ -25,7 +24,7 @@ class GridSquare {
   }
 
   get info() {
-    return { x: this.#x, y: this.#y }; // mostly debugging
+    return { x: this.#x, y: this.#y }; // for getting coordinates
   }
 
   get value() {
@@ -68,8 +67,8 @@ export class Grid {
    * @param {Number} height Height of the grid
    */
   constructor(width, height) {
-    this.width = width ?? 5;
-    this.height = height ?? 5;
+    this.width = width ?? 8;
+    this.height = height ?? 8;
 
     for (let i = 0; i < this.width * this.height; i++) {
       const x = i % this.width;
@@ -140,7 +139,7 @@ export class Grid {
 }
 
 export class GameMap {
-  #margin = 2;
+  #margin = 4;
   #generated = false;
   wumpusPos = null;
   player1Pos = null;
@@ -156,11 +155,11 @@ export class GameMap {
    * @param {Number} trapCount Number of traps placed. Be reasonable. Optional - Default is 4
    * @param {Number} batCount Number of bats placed. Be reasonable. Optional - Default is 4
    */
-  constructor(seed, grid = new Grid(8, 8), roomCount, trapCount, batCount) {
+  constructor(seed, grid = new Grid(10, 10), roomCount, trapCount, batCount) {
     this.grid = grid;
     this.width = grid.width;
     this.height = grid.height;
-    this.roomCount = roomCount ?? 30; // Map is populated with more rooms than this due to pathing
+    this.roomCount = roomCount ?? 40; // Map is populated with more rooms than this due to pathing
     this.trapCount = trapCount ?? 4;
     this.batCount = batCount ?? 4;
     this.rng = seedrandom(seed);
@@ -232,8 +231,8 @@ export class GameMap {
     this.grid.set(centerX, centerY, "room");
 
     // Place Wumpus around the center.
-    const wumpX = Math.round(centerX + this.rng() * this.#margin);
-    const wumpY = Math.round(centerY + this.rng() * this.#margin);
+    const wumpX = Math.round(centerX + this.rng() * (this.#margin / 2));
+    const wumpY = Math.round(centerY + this.rng() * (this.#margin / 2));
     this.grid.set(wumpX, wumpY, "wumpus");
 
     // Get the placed rooms and connect them to the center via astar path finding
@@ -269,7 +268,12 @@ export class GameMap {
     const placedRooms = [];
     let placedTraps = 0;
     let placedBats = 0;
+    let iterator = 0;
     while (placedRooms.length < this.roomCount) {
+      iterator++;
+      if (iterator > 999) {
+        throw new Error("Stuck in infinite loop while trying to place rooms");
+      }
       // Room coordinates
       const rx = Math.floor(this.rng() * this.width);
       const ry = Math.floor(this.rng() * this.height);
@@ -317,7 +321,7 @@ export class GameMap {
       }
 
       const connectToCenter =
-        this.rng() > 0.25 && index > 0 ? this.#aStar(room, centerRoom) : null;
+        this.rng() > 0.1 && index > 0 ? this.#aStar(room, centerRoom) : null;
       if (connectToCenter) {
         this.#connectRooms(connectToCenter);
       }
@@ -344,7 +348,13 @@ export class GameMap {
     gScore.set(start, 0);
     fScore.set(start, heuristic(start, goal));
 
+    let iterator = 0;
+
     while (openSet.length > 0) {
+      iterator++;
+      if (iterator > 999) {
+        throw new Error("Stuck in infinite loop while trying to path with A*");
+      }
       // Pick the node with the lowest fScore
       let current = openSet.reduce((a, b) =>
         (fScore.get(a) ?? Infinity) < (fScore.get(b) ?? Infinity) ? a : b
@@ -363,9 +373,11 @@ export class GameMap {
       openSet.splice(openSet.indexOf(current), 1);
 
       for (let neighbor of this.grid.neighbors(current)) {
-        let stepCost = 1;
+        let stepCost = [1, 3, 6, 12][
+          this.grid.neighbors(current).length - 1 ?? 0
+        ];
         if (neighbor.value === "room" || neighbor.value === "path")
-          stepCost = 0.1; // Lower step cost to try to make sure we don't get parallel coridoors.
+          stepCost *= 0.33; // Lower step cost to try to make sure we don't get parallel coridoors.
 
         if (neighbor.value === "trap") stepCost = 10; // avoid traps
 
@@ -376,7 +388,7 @@ export class GameMap {
           // cameFrom shouldn't have the current from the start, check to see if we're at the start or not
           const prev = cameFrom.get(current);
           if (prev.x !== current.x && prev.y !== current.y) {
-            tentativeG += 5;
+            tentativeG += 1;
           }
         }
 
@@ -429,7 +441,7 @@ export class GameMap {
 }
 
 const testGrid = new Grid(8, 8);
-const testMap = new GameMap("test");
+const testMap = new GameMap();
 testMap.generate();
 
 // test function to visualize the grid made
@@ -535,20 +547,20 @@ RNG with "test":
 // console.log("=".repeat(30));
 // displayMapIndecis(testMap.grid);
 
-// /* console.log(testMap.rng());
-// console.log(testMap.rng()); */
+/* console.log(testMap.rng());
+console.log(testMap.rng()); */
 
 // console.log(`Player spawns:${testMap.playerSpawns}
 //     \nWumpus: ${testMap.wumpusSpawn}
 //     \nPits: ${testMap.pits}
 //     \nBats: ${testMap.bats}`);
 
-// /* console.log(testMap.grid.squareIndex(0));
-// console.log(testMap.grid.squareIndex(1));
-// console.log(testMap.grid.squareIndex(2));
-// console.log(testMap.grid.squareIndex(3)); */
+/* console.log(testMap.grid.squareIndex(0));
+console.log(testMap.grid.squareIndex(1));
+console.log(testMap.grid.squareIndex(2));
+console.log(testMap.grid.squareIndex(3)); */
 
-// // console.log(testMap.map);
+// console.log(testMap.map);
 // console.log(testMap.coordinates);
 
 // const playerSpawn = 10;
