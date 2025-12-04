@@ -18,9 +18,37 @@ function Game() {
   const [coordinates, setCoordinates] = useState([]);
   const [graph, setGraph] = useState(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isMoving, setIsMoving] = useState(false);
+
+  const handleMove = async (targetCave) => {
+    if (isMoving || playerStatus?.currentPlayer !== playerId) return;
+
+    setIsMoving(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${BASE_URL}/${playerId}/move`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetCave }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || result.status === "error") {
+        throw new Error(result.message || "Failed to move.");
+      }
+
+      await fetchPlayerStatus();
+    } catch (err) {
+      console.log("Failed to move:", err);
+      setError(err);
+    } finally {
+      setIsMoving(false);
+    }
+  };
 
   // Fetching player status
-
   const fetchPlayerStatus = async () => {
     if (!playerId) {
       return <div>No player selected.</div>;
@@ -107,11 +135,14 @@ function Game() {
   }
 
   return (
-    <div className="m-5 flex flex-row gap-50">
+    <div className="h-screen flex flex-row gap-50 bg-(--bg)">
       <Map
         playerLocation={playerLocation}
         coordinates={coordinates}
         graph={graph}
+        handleMove={handleMove}
+        playerId={playerId}
+        playerStatus={playerStatus}
       />
       <div>
         <h1

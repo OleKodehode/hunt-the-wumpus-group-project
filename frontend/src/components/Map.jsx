@@ -117,9 +117,6 @@ export default function Map({ playerLocation, coordinates, graph }) {
   return (
     <Box
       sx={{
-        width: "1280px",
-        height: "720px",
-        border: "3px solid black",
         p: 2,
         overflow: "auto",
         display: "grid",
