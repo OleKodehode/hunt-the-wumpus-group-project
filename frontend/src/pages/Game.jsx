@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "react-router-dom";
-import Map from "../components/Map";
-import { useState, useEffect } from "react";
+import GameBoard from "../components/Map";
+import { useState, useEffect, useCallback } from "react";
 import Snackbar from "@mui/material/Snackbar";
 
 const BASE_URL = "http://localhost:9001/api/game";
@@ -20,36 +20,8 @@ function Game() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isMoving, setIsMoving] = useState(false);
 
-  const handleMove = async (targetCave) => {
-    if (isMoving || playerStatus?.currentPlayer !== playerId) return;
-
-    setIsMoving(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${BASE_URL}/${playerId}/move`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetCave }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || result.status === "error") {
-        throw new Error(result.message || "Failed to move.");
-      }
-
-      await fetchPlayerStatus();
-    } catch (err) {
-      console.log("Failed to move:", err);
-      setError(err);
-    } finally {
-      setIsMoving(false);
-    }
-  };
-
   // Fetching player status
-  const fetchPlayerStatus = async () => {
+  const fetchPlayerStatus = useCallback(async () => {
     if (!playerId) {
       return <div>No player selected.</div>;
     }
@@ -70,7 +42,52 @@ function Game() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [playerId, setIsLoading, setPlayerLocation, setPlayerStatus, setError]);
+
+  // Fetching potential tile to move
+  const handleMove = useCallback(
+    async (targetCave) => {
+      if (isMoving || playerStatus?.currentPlayer !== playerId) {
+        console.log(
+          "Move blocked: either moving already or not current player's turn."
+        );
+        return;
+      }
+
+      setIsMoving(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`${BASE_URL}/${playerId}/move`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ targetCave }),
+        });
+
+        const result = await response.json(); // Await the JSON parsing
+
+        if (
+          !response.ok ||
+          result.status === "error" ||
+          result.status === "lost" ||
+          result.status === "win"
+        ) {
+          // If the game ends or there's an error, update status then throw
+          await fetchPlayerStatus();
+          throw new Error(result.message || "Failed to move.");
+        }
+
+        // Immediately fetch new status to reflect the move
+        await fetchPlayerStatus();
+      } catch (err) {
+        console.error("Failed to move:", err);
+        setError(err);
+      } finally {
+        setIsMoving(false);
+      }
+    },
+    [isMoving, playerStatus, playerId, fetchPlayerStatus]
+  );
 
   // Fetching map data (coordinates and graph)
   useEffect(() => {
@@ -109,6 +126,46 @@ function Game() {
     fetchMapData();
   }, [playerId]);
 
+  // WASD movement
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (playerLocation === null || !graph) return;
+
+      const key = e.key.toLowerCase();
+      const neighbors = graph[playerLocation];
+      if (!neighbors) return;
+
+      let targetCave = null;
+
+      switch (key) {
+        case "w": //North
+          targetCave = neighbors[1];
+          break;
+        case "a": //West
+          targetCave = neighbors[0];
+          break;
+        case "s": //South
+          targetCave = neighbors[3];
+          break;
+        case "d": //East
+          targetCave = neighbors[2];
+          break;
+        default:
+          return;
+      }
+
+      if (targetCave !== null) {
+        handleMove(targetCave);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [playerLocation, graph, handleMove]);
+
   //Periodically refreshing player status
   useEffect(() => {
     if (!playerId) return;
@@ -136,7 +193,7 @@ function Game() {
 
   return (
     <div className="h-screen flex flex-row gap-50 bg-(--bg)">
-      <Map
+      <GameBoard
         playerLocation={playerLocation}
         coordinates={coordinates}
         graph={graph}

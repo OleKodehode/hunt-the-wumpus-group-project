@@ -2,24 +2,13 @@ import { useMemo } from "react";
 import { Box } from "@mui/material";
 import Player from "./Player";
 
-// ----------------------------------------------
-// Direction + tile lookup constants
-// ----------------------------------------------
-
-const DIRECTIONS = [
-  [-1, 0], // WEST
-  [0, -1], // NORTH
-  [1, 0], // EAST
-  [0, 1], // SOUTH
-];
-
 const CARDINAL = ["W", "N", "E", "S"];
 
 const TILE_IMAGES = {
   "----": ["/tiles/empty.png"],
   "W---": ["/tiles/W.png"],
   "-N--": ["/tiles/N.png"],
-  "--E-": ["/tiles/E.png"],
+  "--E-": ["/tiles/E_border.png"],
   "---S": ["/tiles/S.png"],
   "W-E-": ["/tiles/WE.png"],
   "WN--": ["/tiles/WN.png"],
@@ -31,81 +20,51 @@ const TILE_IMAGES = {
   "WN-S": ["/tiles/WNS.png"],
   "W-ES": ["/tiles/WES.png"],
   "-NES": ["/tiles/NES.png"],
-  //prettier-ignore
-  "WNES": ["/tiles/WNES.png"],
+  WNES: ["/tiles/WNES.png"],
 };
 
-function discoverGraph(graph, startRoomIndex = 0) {
-  // If we don't have a graph yet (e.g. still fetching), return empty
-  if (!graph) {
-    return {
-      discoveredMap: {},
-      bounds: { minX: 0, minY: 0, maxX: 0, maxY: 0 },
-    };
-  }
-
-  const discovered = {};
-  const visited = new Set();
-
-  // start from 0 so bounds grow from there
-  let minX = 0;
-  let minY = 0;
-  let maxX = 0;
-  let maxY = 0;
-
-  function discover(x, y, roomIndex) {
-    if (visited.has(roomIndex)) return;
-    visited.add(roomIndex);
-
-    // update bounding box
-    minX = Math.min(minX, x);
-    minY = Math.min(minY, y);
-    maxX = Math.max(maxX, x);
-    maxY = Math.max(maxY, y);
-
-    let tileType = "";
-
-    // loop over 4 directions: 0=W, 1=N, 2=E, 3=S
-    for (let i = 0; i < 4; i++) {
-      const nextRoom = graph[roomIndex] ? graph[roomIndex][i] : null;
-
-      if (nextRoom == null) {
-        // no connection in this direction
-        tileType += "-";
-        continue;
-      }
-
-      // there IS a connection in this direction
-      tileType += CARDINAL[i];
-
-      const [dx, dy] = DIRECTIONS[i];
-      discover(x + dx, y + dy, nextRoom);
+export default function GameBoard({
+  playerLocation,
+  coordinates,
+  graph,
+  handleMove,
+  playerId,
+  playerStatus,
+}) {
+  const { bounds, coordToRoomIndex } = useMemo(() => {
+    if (!coordinates || coordinates.length === 0) {
+      return {
+        bounds: { minX: 0, minY: 0, maxX: 0, maxY: 0 },
+        coordToRoomIndex: new Map(),
+      };
     }
 
-    // store the tile type by its coordinate
-    discovered[`${x},${y}`] = tileType;
-  }
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+    const mapping = new Map();
 
-  // start exploring from room 0 at coordinate (0,0)
-  discover(0, 0, startRoomIndex);
+    coordinates.forEach((coord, index) => {
+      if (coord) {
+        minX = Math.min(minX, coord.x);
+        minY = Math.min(minY, coord.y);
+        maxX = Math.max(maxX, coord.x);
+        maxY = Math.max(maxY, coord.y);
+        mapping.set(`${coord.x},${coord.y}`, index);
+      }
+    });
 
-  return {
-    discoveredMap: discovered,
-    bounds: { minX, minY, maxX, maxY },
-  };
-}
-
-export default function Map({ playerLocation, coordinates, graph }) {
-  const { discoveredMap, bounds } = useMemo(
-    () => discoverGraph(graph),
-    [graph]
-  );
+    return {
+      bounds: { minX, minY, maxX, maxY },
+      coordToRoomIndex: mapping,
+    };
+  }, [coordinates]);
 
   const width = bounds.maxX - bounds.minX + 1;
   const height = bounds.maxY - bounds.minY + 1;
 
-  // If graph isn't loaded yet, show loading
-  if (!graph || Object.keys(discoveredMap).length === 0) {
+  if (!graph || !coordinates || coordinates.length === 0) {
     return <div>Loading map...</div>;
   }
 
@@ -113,6 +72,9 @@ export default function Map({ playerLocation, coordinates, graph }) {
     playerLocation !== null && coordinates[playerLocation]
       ? coordinates[playerLocation]
       : null;
+
+  const neighbors = graph[playerLocation] || [];
+  const isCurrentPlayer = playerStatus?.currentPlayer === playerId;
 
   return (
     <Box
@@ -123,34 +85,51 @@ export default function Map({ playerLocation, coordinates, graph }) {
         gridTemplateColumns: `repeat(${width}, 96px)`,
         gridTemplateRows: `repeat(${height}, 96px)`,
         gap: "0px",
-        position: "relative", // Needed for z-indexed children
+        position: "relative",
       }}
     >
-      {Object.entries(discoveredMap).map(([coord, tileType]) => {
-        const [x, y] = coord.split(",").map(Number);
-        const imgSrc =
-          TILE_IMAGES[tileType]?.[
-            Math.floor(Math.random() * (TILE_IMAGES[tileType]?.length || 1))
-          ] || "/tiles/empty.png";
+      {Array.from({ length: height }, (_, y) =>
+        Array.from({ length: width }, (_, x) => {
+          const gridX = x + bounds.minX;
+          const gridY = y + bounds.minY;
+          const roomIndex = coordToRoomIndex.get(`${gridX},${gridY}`);
 
-        return (
-          <Box
-            key={coord}
-            component="img"
-            src={imgSrc}
-            alt={tileType}
-            sx={{
-              width: "96px",
-              height: "96px",
-              // shift coordinates so minX/minY map to grid cell 1,1
-              gridColumn: x - bounds.minX + 1,
-              gridRow: y - bounds.minY + 1,
-            }}
-          />
-        );
-      })}
+          if (roomIndex === undefined) return null;
 
-      {/* Render Player */}
+          const connections = graph[roomIndex];
+          if (!connections) return null;
+
+          const tileType = connections
+            .map((conn, i) => (conn !== null ? CARDINAL[i] : "-"))
+            .join("");
+
+          const imgSrc = TILE_IMAGES[tileType]?.[0] || "/tiles/pithole.png";
+
+          const isNeighbor = neighbors.includes(roomIndex);
+          const isClickable = isNeighbor && isCurrentPlayer;
+
+          return (
+            <Box
+              key={`${gridX},${gridY}`}
+              component="img"
+              src={imgSrc}
+              alt={tileType}
+              onClick={() => isClickable && handleMove(roomIndex)}
+              sx={{
+                width: "96px",
+                height: "96px",
+                gridColumn: x + 1,
+                gridRow: y + 1,
+                cursor: isClickable ? "pointer" : "default",
+                "&:hover": {
+                  filter: isClickable ? "brightness(1.2)" : "none",
+                },
+              }}
+            />
+          );
+        })
+      )}
+
       {playerCoords && (
         <Box
           sx={{
@@ -161,7 +140,9 @@ export default function Map({ playerLocation, coordinates, graph }) {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 1, // Ensure player is on top of tiles
+            zIndex: 1,
+            pointerEvents: "none",
+            paddingBottom: "1.2rem",
           }}
         >
           <Player />

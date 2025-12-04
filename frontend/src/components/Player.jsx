@@ -1,5 +1,5 @@
 function Player({ dir = "left" }) {
-  const imgSrc = "/sprites/player/player.png";
+  const imgSrc = "/sprites/player/player1.png";
   const imgDir = { transform: `scaleX(${dir === "right" ? -1 : 1})` };
   return (
     <>
