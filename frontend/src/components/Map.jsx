@@ -20,7 +20,8 @@ const TILE_IMAGES = {
   "WN-S": ["/tiles/WNS.png"],
   "W-ES": ["/tiles/WES.png"],
   "-NES": ["/tiles/NES.png"],
-  WNES: ["/tiles/WNES.png"],
+  // prettier-ignore
+  "WNES": ["/tiles/WNES.png"],
 };
 
 export default function GameBoard({
@@ -79,11 +80,10 @@ export default function GameBoard({
   return (
     <Box
       sx={{
-        p: 2,
-        overflow: "auto",
+        m: 2,
         display: "grid",
-        gridTemplateColumns: `repeat(${width}, 96px)`,
-        gridTemplateRows: `repeat(${height}, 96px)`,
+        gridTemplateColumns: `repeat(${width}, 88px)`,
+        gridTemplateRows: `repeat(${height}, 88px)`,
         gap: "0px",
         position: "relative",
       }}
@@ -103,7 +103,7 @@ export default function GameBoard({
             .map((conn, i) => (conn !== null ? CARDINAL[i] : "-"))
             .join("");
 
-          const imgSrc = TILE_IMAGES[tileType]?.[0] || "/tiles/pithole.png";
+          const imgSrc = TILE_IMAGES[tileType]?.[0] || "/tiles/empty.png";
 
           const isNeighbor = neighbors.includes(roomIndex);
           const isClickable = isNeighbor && isCurrentPlayer;
@@ -116,8 +116,8 @@ export default function GameBoard({
               alt={tileType}
               onClick={() => isClickable && handleMove(roomIndex)}
               sx={{
-                width: "96px",
-                height: "96px",
+                width: "88px",
+                height: "88px",
                 gridColumn: x + 1,
                 gridRow: y + 1,
                 cursor: isClickable ? "pointer" : "default",
@@ -135,14 +135,14 @@ export default function GameBoard({
           sx={{
             gridColumn: playerCoords.x - bounds.minX + 1,
             gridRow: playerCoords.y - bounds.minY + 1,
-            width: "96px",
-            height: "96px",
+            width: "88px",
+            height: "88px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             zIndex: 1,
             pointerEvents: "none",
-            paddingBottom: "1.2rem",
+            paddingBottom: "1.5rem",
           }}
         >
           <Player />

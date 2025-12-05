@@ -22,9 +22,7 @@ function Game() {
 
   // Fetching player status
   const fetchPlayerStatus = useCallback(async () => {
-    if (!playerId) {
-      return <div>No player selected.</div>;
-    }
+    if (!playerId) return;
 
     try {
       const response = await fetch(`${BASE_URL}/${playerId}/status`);
@@ -192,7 +190,7 @@ function Game() {
   }
 
   return (
-    <div className="h-screen flex flex-row gap-50 bg-(--bg)">
+    <div className="min-h-screen flex flex-row gap-50 bg-(--bg)">
       <GameBoard
         playerLocation={playerLocation}
         coordinates={coordinates}
