@@ -20,6 +20,10 @@ function Game() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isMoving, setIsMoving] = useState(false);
 
+  const [wumpusLocation, setWumpusLocation] = useState(null);
+  const [batLocations, setBatLocations] = useState([]);
+  const [pitLocations, setPitLocations] = useState([]);
+
   // Fetching player status
   const fetchPlayerStatus = useCallback(async () => {
     if (!playerId) return;
@@ -124,11 +128,32 @@ function Game() {
     fetchMapData();
   }, [playerId]);
 
+  useEffect(() => {
+    const fetchHazardLocations = async () => {
+      if (!gameId) return;
+
+      try {
+        const response = await fetch(`${BASE_URL}/${gameId}/hazards`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        setWumpusLocation(data.hazards.wumpus);
+        setBatLocations(data.hazards.bats);
+        setPitLocations(data.hazards.pits);
+      } catch (err) {
+        console.error("Failed to fetch hazard locations:", err);
+        // Not setting a general error for this, as it's not as critical as map data
+      }
+    };
+    fetchHazardLocations();
+  }, [gameId]);
+
   // WASD movement
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (playerLocation === null || !graph) return;
-
+      
       const key = e.key.toLowerCase();
       const neighbors = graph[playerLocation];
       if (!neighbors) return;
@@ -198,6 +223,9 @@ function Game() {
         handleMove={handleMove}
         playerId={playerId}
         playerStatus={playerStatus}
+        wumpusLocation={wumpusLocation}
+        batLocations={batLocations}
+        pitLocations={pitLocations}
       />
       <div>
         <h1

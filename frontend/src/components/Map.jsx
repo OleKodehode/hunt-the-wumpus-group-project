@@ -1,6 +1,9 @@
 import { useMemo } from "react";
 import { Box } from "@mui/material";
 import Player from "./Player";
+import Monster from "./Monster";
+import Bat from "./Bat";
+import Pithole from "./Pithole";
 
 const CARDINAL = ["W", "N", "E", "S"];
 
@@ -31,6 +34,9 @@ export default function GameBoard({
   handleMove,
   playerId,
   playerStatus,
+  wumpusLocation,
+  batLocations,
+  pitLocations,
 }) {
   const { bounds, coordToRoomIndex } = useMemo(() => {
     if (!coordinates || coordinates.length === 0) {
@@ -148,6 +154,70 @@ export default function GameBoard({
           <Player />
         </Box>
       )}
+
+      {wumpusLocation && coordinates[wumpusLocation] && (
+        <Box
+          sx={{
+            gridColumn: coordinates[wumpusLocation].x - bounds.minX + 1,
+            gridRow: coordinates[wumpusLocation].y - bounds.minY + 1,
+            width: "88px",
+            height: "88px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1,
+            pointerEvents: "none",
+          }}
+        >
+          <Monster />
+        </Box>
+      )}
+
+      {batLocations.map((batLocation) => {
+        if (!coordinates[batLocation]) return null;
+        const batCoords = coordinates[batLocation];
+        return (
+          <Box
+            key={`bat-${batLocation}`}
+            sx={{
+              gridColumn: batCoords.x - bounds.minX + 1,
+              gridRow: batCoords.y - bounds.minY + 1,
+              width: "88px",
+              height: "88px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1,
+              pointerEvents: "none",
+            }}
+          >
+            <Bat />
+          </Box>
+        );
+      })}
+
+      {pitLocations.map((pitLocation) => {
+        if (!coordinates[pitLocation]) return null;
+        const pitCoords = coordinates[pitLocation];
+        return (
+          <Box
+            key={`pit-${pitLocation}`}
+            sx={{
+              gridColumn: pitCoords.x - bounds.minX + 1,
+              gridRow: pitCoords.y - bounds.minY + 1,
+              width: "88px",
+              height: "88px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1,
+              pointerEvents: "none",
+            }}
+          >
+            <Pithole />
+          </Box>
+        );
+      })}
     </Box>
   );
 }
