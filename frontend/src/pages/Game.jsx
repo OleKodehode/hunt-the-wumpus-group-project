@@ -2,6 +2,7 @@ import { useParams, useLocation } from "react-router-dom";
 import GameBoard from "../components/Map";
 import { useState, useEffect, useCallback } from "react";
 import Snackbar from "@mui/material/Snackbar";
+import DeathPage from './DeathPage'; // Import DeathPage
 
 const BASE_URL = "http://localhost:9001/api/game";
 
@@ -14,6 +15,7 @@ function Game() {
   const [playerStatus, setPlayerStatus] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [gameState, setGameState] = useState('playing'); // New state for game status
 
   const [coordinates, setCoordinates] = useState([]);
   const [graph, setGraph] = useState(null);
@@ -68,15 +70,18 @@ function Game() {
 
         const result = await response.json(); // Await the JSON parsing
 
-        if (
-          !response.ok ||
-          result.status === "error" ||
-          result.status === "lost" ||
-          result.status === "win"
-        ) {
-          // If the game ends or there's an error, update status then throw
+        if (!response.ok || result.status === "error") {
+          // If there's an actual error, update status then throw
           await fetchPlayerStatus();
           throw new Error(result.message || "Failed to move.");
+        } else if (result.status === "lost") {
+          await fetchPlayerStatus();
+          setGameState('lost');
+          return; // Exit early as game is over
+        } else if (result.status === "win") {
+          await fetchPlayerStatus();
+          setGameState('win');
+          return; // Exit early as game is over
         }
 
         // Immediately fetch new status to reflect the move
@@ -210,8 +215,20 @@ function Game() {
     return <p>Loading game data...</p>;
   }
 
-  if (error) {
+  if (error && gameState === 'playing') { // Only show error if game is still playing
     return <p>Error loading game data: {error.message}</p>;
+  }
+
+  if (gameState === 'lost') {
+    return <DeathPage />;
+  }
+
+  if (gameState === 'win') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+        <h1 className="font-cherry text-[10rem] text-[#22c55e] [text-shadow:0_0_5px_#22c55e,0_0_10px_#22c55e,0_0_15px_#22c55e]">YOU WON!</h1>
+      </div>
+    );
   }
 
   return (
