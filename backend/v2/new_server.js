@@ -6,8 +6,8 @@ import { GameMap, Grid } from "./map_gen.js";
 export default class WumpusServerV2 {
   numPlayers = 0;
   constructor() {
-    this.gameSeed = Math.floor(Math.random() * 242000);
-    // this.gameSeed = 1234; // For testing only
+    // this.gameSeed = Math.floor(Math.random() * 242000);
+    this.gameSeed = 1234; // For testing only
 
     this.mapObject = new GameMap(this.gameSeed);
     this.mapObject.generate();
@@ -20,6 +20,10 @@ export default class WumpusServerV2 {
     this.playerSpawns = this.mapObject.playerSpawns;
     this.map = this.mapObject.map;
     this.numTiles = this.map.length;
+    this.activeTiles = this.map
+      .map((neighbors, index) => ({ index, neighbors }))
+      .filter((tile) => tile.neighbors.some((n) => n !== null))
+      .map((tile) => tile.index);
   }
 
   initializePlayer(playerId) {
@@ -42,7 +46,7 @@ export default class WumpusServerV2 {
     return startCave;
   }
 
-  _getPreceptions(caveId) {
+  _getPerceptions(caveId) {
     const perceptions = [];
     const neighbors = this.mapObject.neighbors(caveId);
 
@@ -96,14 +100,34 @@ export default class WumpusServerV2 {
     }
 
     if (this.bats.includes(newLocation)) {
-      // TODO: add a check to make sure the bat can't put you into a pit.
-      const newCave = Math.floor(Math.random() * this.numTiles);
+      const safeTiles = this._getSafeTiles(newLocation);
+
+      if (safeTiles.length === 0) {
+        // Just in case. If there for some reason isn't any safe tiles, kill the player instead.
+        // This shouldn't trigger.
+        result.status = "Lost";
+        result.message += `Bats couldn't find a safe tile and thus killed you. [Safe tiles: ${safeTiles.length} - ${safeTiles}]`;
+        player.is_alive = false;
+        return;
+      }
+
+      const newCave = safeTiles[Math.floor(Math.random() * safeTiles.length)];
       player.location = newCave;
       result.message += ` A Giant bat picks you up and flies you to room ${newCave}`;
       result.status = "Caught by a bat";
       this._checkForHazards(playerId, newCave, result);
       return;
     }
+  }
+
+  _getSafeTiles(newLocation) {
+    return this.activeTiles.filter(
+      (room) =>
+        !this.pits.includes(room) &&
+        !this.bats.includes(room) &&
+        room !== this.wumpusLocation &&
+        room !== newLocation
+    );
   }
 
   _moveWumpus() {
@@ -132,7 +156,7 @@ export default class WumpusServerV2 {
     const result = {
       status: "ok",
       message: `Your current cave: ${current}`,
-      perceptions: this._getPreceptions(current),
+      perceptions: this._getPerceptions(current),
     };
 
     if (action === "move") {
@@ -140,7 +164,7 @@ export default class WumpusServerV2 {
         return {
           status: "error",
           message: "Invalid move. Choose an adjacent cave.",
-          perceptions: this._getPreceptions(current),
+          perceptions: this._getPerceptions(current),
         };
       }
       player.location = targetCave;
@@ -152,14 +176,14 @@ export default class WumpusServerV2 {
         return {
           status: "error",
           message: "You have no arrows left!",
-          perceptions: this._getPreceptions(current),
+          perceptions: this._getPerceptions(current),
         };
       }
       if (targetCave === undefined || !this.map[current].includes(targetCave)) {
         return {
           status: "error",
           message: "Invalid target. You can only shoot into an adjacent cave.",
-          perceptions: this._getPreceptions(current),
+          perceptions: this._getPerceptions(current),
         };
       }
 
@@ -199,12 +223,12 @@ export default class WumpusServerV2 {
       return {
         status: "error",
         message: "Unknown Action.",
-        perceptions: this._getPreceptions(current),
+        perceptions: this._getPerceptions(current),
       };
     }
 
     if (player.is_alive) {
-      result.perceptions = this._getPreceptions(player.location);
+      result.perceptions = this._getPerceptions(player.location);
     } else {
       result.perceptions = [];
     }
@@ -228,7 +252,7 @@ export default class WumpusServerV2 {
       location: player.location,
       arrows: player.arrows,
       is_alive: player.is_alive,
-      perceptions: this._getPreceptions(player.location),
+      perceptions: this._getPerceptions(player.location),
       visitedLocations: player.visitedLocations,
       currentplayer: player,
     };
@@ -274,11 +298,7 @@ export default class WumpusServerV2 {
   }
 }
 
-const test = new WumpusServerV2();
+// const test = new WumpusServerV2();
 
-/* console.log(test);
-console.log(test.map[52]);
-console.log(test.mapObject.neighbors(52));
-console.log(test.getHazardLocation());
-console.log(test.gameSeed);
- */
+// console.log(test);
+// console.log(test.activeTiles);

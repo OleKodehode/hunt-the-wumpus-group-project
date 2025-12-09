@@ -35,7 +35,7 @@ export function createGame(req, res) {
   return {
     status: "ok",
     message: "New game created. Share this gameId for others to join.",
-    preceptions: server._getPreceptions(startLocation),
+    preceptions: server._getPerceptions(startLocation),
     gameId,
     playerId,
     startLocation,
@@ -71,7 +71,7 @@ export function joinGame(req, res) {
   return {
     status: "ok",
     message: `Joined game ${gameId}. Go kill wumpus!`,
-    preceptions: game.server._getPreceptions(startLocation),
+    preceptions: game.server._getPerceptions(startLocation),
     playerId,
     startLocation,
     numCaves: game.server.numTiles,
