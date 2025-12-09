@@ -6,8 +6,8 @@ import { GameMap, Grid } from "./map_gen.js";
 export default class WumpusServerV2 {
   numPlayers = 0;
   constructor() {
-    // this.gameSeed = Math.floor(Math.random() * 242000);
-    this.gameSeed = 1234; // For testing only
+    this.gameSeed = Math.floor(Math.random() * 242000);
+    // this.gameSeed = 1234; // For testing only
 
     this.mapObject = new GameMap(this.gameSeed);
     this.mapObject.generate();
