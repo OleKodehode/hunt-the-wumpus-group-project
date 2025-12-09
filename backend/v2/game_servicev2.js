@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from "uuid";
  * @property {WumpusServer} server - Instance of the game logic.
  * @property {string[]} playerOrder - Turn order for players.
  * @property {number} currentPlayerIndex - Index of the current player's turn.
+ * @property {"open"|"ok"|"error"|"lost"} status - The server status.
  */
 
 /** @type {Object.<string, GameEntry>} - Active games indexed by gameId */
@@ -213,9 +214,11 @@ export function checkPlayerAndTurn(req, res, next) {
     });
   }
 
-  const server = game.server;
+  /* Try to have names match up with the key name
+    if they are to be assigned to an object. */
+  const gameServer = game.server;
 
-  if (!server.gameState[playerId] || !server.gameState[playerId].is_alive) {
+  if (!gameServer.gameState[playerId] || !gameServer.gameState[playerId].is_alive) {
     return res.status(400).json({
       status: "lost",
       message: "You are dead and cannot act.",
@@ -235,10 +238,13 @@ export function checkPlayerAndTurn(req, res, next) {
     });
   }
 
-  req.gameServer = server;
-  req.gameId = gameId;
-  req.playerId = playerId;
-  req.game = game;
+  /* Just "assign" to the object instead */
+  Object.assign(req, {
+    gameServer,
+    gameId,
+    playerId,
+    game
+  });
 
   next();
 }
@@ -262,7 +268,7 @@ export function getTurnStatus(gameId) {
   return {
     status: "ok",
     message: "Current turn status retrieved successfully.",
-    currentPlayer: currentPlayer,
+    currentPlayer, // `currentPlayer: currentPlayer` is equivalent to `currentPlayer` in this context
   };
 }
 
