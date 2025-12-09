@@ -1,5 +1,8 @@
 import seedrandom from "seedrandom";
 
+/** @typedef {[number?,number?,number?,number?]} MapRoom */
+/** @typedef {MapRoom[]} Map */
+
 class GridSquare {
   #type = null; // Room type
   #x = null; // x coord
@@ -102,6 +105,7 @@ export class Grid {
   }
 
   get map() {
+     /** @type {Map} */
     const dungeonMap = [];
     this.#gridSquares.forEach((square) =>
       dungeonMap.push(square.connectedRooms)
