@@ -265,12 +265,17 @@ export default class WumpusServerV2 {
   }
 
   getMapData() {
-    const dungeonMap = {};
-    this.map.forEach((room, index) => {
-      dungeonMap[index] = room;
-    });
+    // const dungeonMap = {};
+    // this.map.forEach((room, index) => {
+    //   dungeonMap[index] = room;
+    // });
 
-    return dungeonMap;
+    // return dungeonMap;
+
+    return this.map.reduce((acc, curr, idx) => curr.every(e => e === null)
+      ? acc
+      : {...acc, ...{[idx]: curr}},
+    {});
   }
 }
 
