@@ -138,7 +138,9 @@ export class Grid {
       [0, 1],
     ];
 
-    return dirs.map(([dx, dy]) => this.get(square.x + dx, square.y + dy).value);
+    return dirs.map(
+      ([dx, dy]) => this.get(square.x + dx, square.y + dy)?.value
+    );
   }
 }
 
